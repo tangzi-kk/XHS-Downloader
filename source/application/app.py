@@ -622,7 +622,7 @@ class XHS:
     ) -> None:
         self.logging(
             _(
-                "程序会自动读取并提取剪贴板中的小红书作品链接，并自动下载链接对应的作品文件，如需关闭，请点击关闭按钮，或者向剪贴板写入 “close” 文本！"
+                "程序会自动读取并提取剪贴板中的小红书作品链接，并自动下载链接对应的作品文件，如需关闭，请点击关闭按钮，或者向剪贴板写入 "close""
             ),
             style=MASTER,
         )
@@ -716,6 +716,7 @@ class XHS:
         )
         server = Server(config)
         await server.serve()
+
     def get_tenant_access_token(self):
         app_id = os.getenv("FEISHU_APP_ID")
         app_secret = os.getenv("FEISHU_APP_SECRET")
@@ -797,6 +798,7 @@ class XHS:
             raise HTTPException(status_code=500, detail=f"file_token missing: {data}")
 
         return file_token
+
     def setup_routes(
         self,
         server: FastAPI,
@@ -848,7 +850,8 @@ class XHS:
                 else:
                     msg = _("获取小红书作品数据失败")
             return ExtractData(message=msg, params=extract, data=data)
-                @server.post("/feishu_upload")
+
+        @server.post("/feishu_upload")
         async def feishu_upload(
             image_url: str = Body(..., embed=True)
         ):
@@ -876,6 +879,7 @@ class XHS:
                 raise HTTPException(status_code=500, detail=f"HTTP error: {str(e)}")
             except Exception as e:
                 raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
+
     async def run_mcp_server(
         self,
         transport="streamable-http",
@@ -905,7 +909,7 @@ class XHS:
                 功能：输入小红书作品链接，下载作品文件，默认不返回作品信息数据。
                 参数：
                 - url（必填）：小红书作品链接
-                - index（选填）：根据用户指定的图片序号（如用户说“下载第1和第3张”时，index应为 [1, 3]），生成由所需图片序号组成的列表；如果用户未指定序号，则该字段为 None
+                - index（选填）：根据用户指定的图片序号（如用户说"下载第1和第3张"时，index应为 [1, 3]），生成由所需图片序号组成的列表；如果用户未指定则为空
                 - return_data（可选）：是否返回作品信息数据；如需返回作品信息数据，设置此参数为 true，默认值为 false
                 返回：
                 - message：结果提示
@@ -965,7 +969,7 @@ class XHS:
                 - https://www.xiaohongshu.com/explore/...
                 - https://www.xiaohongshu.com/discovery/item/...
                 - https://xhslink.com/...
-                index（选填）：根据用户指定的图片序号（如用户说“下载第1和第3张”时，index应为 [1, 3]），生成由所需图片序号组成的列表；如果用户未指定序号，则该字段为 None
+                index（选填）：根据用户指定的图片序号（如用户说"下载第1和第3张"时，index应为 [1, 3]），生成由所需图片序号组成的列表；如果用户未指定则为空
                 return_data（可选）：是否返回作品信息数据；如需返回作品信息数据，设置此参数为 true，默认值为 false
                 
                 返回：
