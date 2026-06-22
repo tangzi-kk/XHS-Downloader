@@ -850,10 +850,7 @@ class XHS:
                 else:
                     msg = _("获取小红书作品数据失败")
             return ExtractData(message=msg, params=extract, data=data)
-
         @server.post("/feishu_upload_v2")
-        @server.post("/feishu_upload")
-        async def feishu_upload(
         @server.post("/feishu_upload")
         async def feishu_upload(
             image_url: str = Body(..., embed=True)
