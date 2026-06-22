@@ -13,7 +13,7 @@ from datetime import datetime
 from re import compile
 from urllib.parse import urlparse
 from textwrap import dedent
-16  from fastapi import FastAPI, Body
+from fastapi import FastAPI, Body
 from fastapi.responses import RedirectResponse
 from fastmcp import FastMCP
 from typing import Annotated
@@ -765,11 +765,10 @@ class XHS:
                 else:
                     msg = _("获取小红书作品数据失败")
             return ExtractData(message=msg, params=extract, data=data)
-               @server.post("/feishu_upload")
+        @server.post("/feishu_upload")
         async def feishu_upload(
             image_url: str = Body(..., embed=True)
         ):
-
             return {
                 "image_url": image_url,
                 "message": "success"
