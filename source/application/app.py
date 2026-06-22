@@ -765,7 +765,11 @@ class XHS:
                 else:
                     msg = _("获取小红书作品数据失败")
             return ExtractData(message=msg, params=extract, data=data)
-
+        @server.post("/test")
+        async def test():
+            return {
+                "message": "hello"
+            }
     async def run_mcp_server(
         self,
         transport="streamable-http",
