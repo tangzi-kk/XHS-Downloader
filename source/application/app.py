@@ -764,7 +764,68 @@ class XHS:
             filename = f"image{ext}"
 
         return image_bytes, filename, content_type
+        @staticmethod
+    def is_video_media(filename: str, content_type: str) -> bool:
+        video_extensions = {".mp4", ".mov", ".m4v", ".webm"}
+        extension = os.path.splitext(filename.lower())[1]
 
+        return (
+            content_type.lower().startswith("video/")
+            or extension in video_extensions
+        )
+
+    @staticmethod
+    def extract_video_cover(
+        video_bytes: bytes,
+        source_filename: str,
+    ) -> tuple[bytes, str, str]:
+        source_extension = os.path.splitext(source_filename)[1] or ".mp4"
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            video_path = os.path.join(temp_dir, f"source{source_extension}")
+            cover_path = os.path.join(temp_dir, "video_cover.jpg")
+
+            with open(video_path, "wb") as file:
+                file.write(video_bytes)
+
+            result = subprocess.run(
+                [
+                    "ffmpeg",
+                    "-y",
+                    "-hide_banner",
+                    "-loglevel",
+                    "error",
+                    "-ss",
+                    "0.3",
+                    "-i",
+                    video_path,
+                    "-frames:v",
+                    "1",
+                    "-q:v",
+                    "2",
+                    cover_path,
+                ],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                timeout=30,
+            )
+
+            if result.returncode != 0 or not os.path.exists(cover_path):
+                error_text = result.stderr.decode(
+                    "utf-8",
+                    errors="ignore",
+                )[-500:]
+
+                raise RuntimeError(
+                    f"ffmpeg 视频封面提取失败：{error_text}"
+                )
+
+            with open(cover_path, "rb") as file:
+                return (
+                    file.read(),
+                    "video_cover.jpg",
+                    "image/jpeg",
+                )
     def upload_image_to_feishu(
         self,
         image_bytes: bytes,
