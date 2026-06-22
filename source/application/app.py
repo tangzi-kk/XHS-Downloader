@@ -864,6 +864,64 @@ class XHS:
 
         return file_token
 
+    def update_bitable_record(
+        self,
+        record_id: str,
+        fields: dict,
+    ):
+        app_token = os.getenv("FEISHU_BITABLE_APP_TOKEN")
+        table_id = os.getenv("FEISHU_BITABLE_TABLE_ID")
+
+        if not app_token:
+            raise HTTPException(
+                status_code=500,
+                detail="Missing FEISHU_BITABLE_APP_TOKEN",
+            )
+
+        if not table_id:
+            raise HTTPException(
+                status_code=500,
+                detail="Missing FEISHU_BITABLE_TABLE_ID",
+            )
+
+        tenant_access_token = self.get_tenant_access_token()
+
+        response = requests.put(
+            (
+                "https://open.feishu.cn/open-apis/bitable/v1/"
+                f"apps/{app_token}/tables/{table_id}/records/{record_id}"
+            ),
+            headers={
+                "Authorization": f"Bearer {tenant_access_token}",
+                "Content-Type": "application/json; charset=utf-8",
+            },
+            json={
+                "fields": fields,
+            },
+            timeout=60,
+        )
+
+        try:
+            data = response.json()
+        except ValueError:
+            data = {
+                "raw_response": response.text[:1000],
+            }
+
+        if not response.ok:
+            raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Feishu update HTTP failed: {data}",
+            )
+
+        if data.get("code") != 0:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Feishu update record failed: {data}",
+            )
+
+        return data.get("data") or {}
+
     def setup_routes(
         self,
         server: FastAPI,
@@ -963,6 +1021,52 @@ class XHS:
                 raise HTTPException(status_code=500, detail=f"HTTP error: {str(e)}")
             except Exception as e:
                 raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
+
+        @server.post("/feishu_update_record")
+        async def feishu_update_record(
+            record_id: str = Body(..., embed=True),
+            fields: dict = Body(..., embed=True),
+        ):
+            clean_record_id = str(record_id or "").strip()
+
+            if not clean_record_id:
+                raise HTTPException(
+                    status_code=400,
+                    detail="record_id is required",
+                )
+
+            if not isinstance(fields, dict) or not fields:
+                raise HTTPException(
+                    status_code=400,
+                    detail="fields must be a non-empty object",
+                )
+
+            try:
+                data = self.update_bitable_record(
+                    record_id=clean_record_id,
+                    fields=fields,
+                )
+
+                return {
+                    "record_id": clean_record_id,
+                    "message": "success",
+                    "data": data,
+                }
+
+            except requests.HTTPError as e:
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"HTTP error: {str(e)}",
+                )
+
+            except HTTPException:
+                raise
+
+            except Exception as e:
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"Update record failed: {str(e)}",
+                )
 
     async def run_mcp_server(
         self,
