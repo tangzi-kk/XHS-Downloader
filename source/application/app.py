@@ -13,7 +13,10 @@ from datetime import datetime
 from re import compile
 from urllib.parse import urlparse
 from textwrap import dedent
-from fastapi import FastAPI, Body
+import os
+import mimetypes
+import requests
+from fastapi import FastAPI, Body, HTTPException
 from fastapi.responses import RedirectResponse
 from fastmcp import FastMCP
 from typing import Annotated
@@ -713,7 +716,87 @@ class XHS:
         )
         server = Server(config)
         await server.serve()
+    def get_tenant_access_token(self):
+        app_id = os.getenv("FEISHU_APP_ID")
+        app_secret = os.getenv("FEISHU_APP_SECRET")
 
+        if not app_id or not app_secret:
+            raise HTTPException(status_code=500, detail="Missing FEISHU_APP_ID or FEISHU_APP_SECRET")
+
+        resp = requests.post(
+            "https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal",
+            json={
+                "app_id": app_id,
+                "app_secret": app_secret,
+            },
+            timeout=30,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+
+        if data.get("code") != 0:
+            raise HTTPException(status_code=500, detail=f"Get tenant_access_token failed: {data}")
+
+        token = data.get("tenant_access_token")
+        if not token:
+            raise HTTPException(status_code=500, detail=f"tenant_access_token missing: {data}")
+
+        return token
+
+    def download_image_bytes(self, image_url: str):
+        resp = requests.get(
+            image_url,
+            headers={"User-Agent": "Mozilla/5.0"},
+            timeout=60,
+        )
+        resp.raise_for_status()
+
+        image_bytes = resp.content
+        content_type = resp.headers.get("Content-Type", "image/jpeg").split(";")[0].strip()
+
+        path = urlparse(image_url).path
+        filename = path.split("/")[-1] or "image.jpg"
+        if "." not in filename:
+            ext = mimetypes.guess_extension(content_type) or ".jpg"
+            filename = f"image{ext}"
+
+        return image_bytes, filename, content_type
+
+    def upload_image_to_feishu(
+        self,
+        image_bytes: bytes,
+        filename: str,
+        content_type: str,
+        tenant_access_token: str,
+        app_token: str,
+    ):
+        resp = requests.post(
+            "https://open.feishu.cn/open-apis/drive/v1/medias/upload_all",
+            headers={
+                "Authorization": f"Bearer {tenant_access_token}",
+            },
+            data={
+                "file_name": filename,
+                "parent_type": "bitable",
+                "parent_node": app_token,
+                "size": str(len(image_bytes)),
+            },
+            files={
+                "file": (filename, image_bytes, content_type),
+            },
+            timeout=120,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+
+        if data.get("code") != 0:
+            raise HTTPException(status_code=500, detail=f"Feishu media upload failed: {data}")
+
+        file_token = (data.get("data") or {}).get("file_token")
+        if not file_token:
+            raise HTTPException(status_code=500, detail=f"file_token missing: {data}")
+
+        return file_token
     def setup_routes(
         self,
         server: FastAPI,
@@ -765,14 +848,34 @@ class XHS:
                 else:
                     msg = _("获取小红书作品数据失败")
             return ExtractData(message=msg, params=extract, data=data)
-        @server.post("/feishu_upload")
+                @server.post("/feishu_upload")
         async def feishu_upload(
             image_url: str = Body(..., embed=True)
         ):
-            return {
-                "image_url": image_url,
-                "message": "success"
-            }
+            app_token = os.getenv("FEISHU_BITABLE_APP_TOKEN")
+            if not app_token:
+                raise HTTPException(status_code=500, detail="Missing FEISHU_BITABLE_APP_TOKEN")
+
+            try:
+                tenant_access_token = self.get_tenant_access_token()
+                image_bytes, filename, content_type = self.download_image_bytes(image_url)
+                file_token = self.upload_image_to_feishu(
+                    image_bytes=image_bytes,
+                    filename=filename,
+                    content_type=content_type,
+                    tenant_access_token=tenant_access_token,
+                    app_token=app_token,
+                )
+
+                return {
+                    "image_url": image_url,
+                    "file_token": file_token,
+                    "message": "success"
+                }
+            except requests.HTTPError as e:
+                raise HTTPException(status_code=500, detail=f"HTTP error: {str(e)}")
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
     async def run_mcp_server(
         self,
         transport="streamable-http",
