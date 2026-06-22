@@ -764,7 +764,8 @@ class XHS:
             filename = f"image{ext}"
 
         return image_bytes, filename, content_type
-        @staticmethod
+
+    @staticmethod
     def is_video_media(filename: str, content_type: str) -> bool:
         video_extensions = {".mp4", ".mov", ".m4v", ".webm"}
         extension = os.path.splitext(filename.lower())[1]
@@ -826,6 +827,7 @@ class XHS:
                     "video_cover.jpg",
                     "image/jpeg",
                 )
+
     def upload_image_to_feishu(
         self,
         image_bytes: bytes,
