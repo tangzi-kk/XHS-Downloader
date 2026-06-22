@@ -14,6 +14,8 @@ from re import compile
 from urllib.parse import urlparse
 from textwrap import dedent
 import os
+import subprocess
+import tempfile
 import mimetypes
 import requests
 from fastapi import FastAPI, Body, HTTPException
