@@ -924,7 +924,26 @@ class XHS:
 
             try:
                 tenant_access_token = self.get_tenant_access_token()
-                image_bytes, filename, content_type = self.download_image_bytes(image_url)
+
+                source_bytes, source_filename, source_content_type = (
+                    self.download_image_bytes(image_url)
+                )
+
+                if self.is_video_media(
+                    source_filename,
+                    source_content_type,
+                ):
+                    image_bytes, filename, content_type = (
+                        self.extract_video_cover(
+                            source_bytes,
+                            source_filename,
+                        )
+                    )
+                else:
+                    image_bytes = source_bytes
+                    filename = source_filename
+                    content_type = source_content_type
+
                 file_token = self.upload_image_to_feishu(
                     image_bytes=image_bytes,
                     filename=filename,
