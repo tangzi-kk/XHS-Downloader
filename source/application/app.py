@@ -720,6 +720,13 @@ class XHS:
         server = Server(config)
         await server.serve()
 
+    @staticmethod
+    def parse_feishu_response(response):
+        try:
+            return response.json(), "feishu_response_json"
+        except ValueError:
+            return response.text[:1000], "raw_text"
+
     def get_tenant_access_token(self):
         app_id = os.getenv("FEISHU_APP_ID")
         app_secret = os.getenv("FEISHU_APP_SECRET")
@@ -735,11 +742,43 @@ class XHS:
             },
             timeout=30,
         )
-        resp.raise_for_status()
-        data = resp.json()
+        data, body_key = self.parse_feishu_response(resp)
+
+        if not resp.ok:
+            raise HTTPException(
+                status_code=resp.status_code,
+                detail={
+                    "stage": "feishu_tenant_access_token",
+                    "http_status": resp.status_code,
+                    body_key: data,
+                    "feishu_log_id": resp.headers.get("x-tt-logid", ""),
+                    "app_id_suffix": app_id[-6:],
+                },
+            )
+
+        if not isinstance(data, dict):
+            raise HTTPException(
+                status_code=500,
+                detail={
+                    "stage": "feishu_tenant_access_token",
+                    "http_status": resp.status_code,
+                    body_key: data,
+                    "feishu_log_id": resp.headers.get("x-tt-logid", ""),
+                    "app_id_suffix": app_id[-6:],
+                },
+            )
 
         if data.get("code") != 0:
-            raise HTTPException(status_code=500, detail=f"Get tenant_access_token failed: {data}")
+            raise HTTPException(
+                status_code=500,
+                detail={
+                    "stage": "feishu_tenant_access_token",
+                    "http_status": resp.status_code,
+                    "feishu_response_json": data,
+                    "feishu_log_id": resp.headers.get("x-tt-logid", ""),
+                    "app_id_suffix": app_id[-6:],
+                },
+            )
 
         token = data.get("tenant_access_token")
         if not token:
@@ -837,7 +876,12 @@ class XHS:
         tenant_access_token: str,
         app_token: str,
     ):
-        parent_type = "bitable_image"
+        safe_content_type = content_type or "image/jpeg"
+        parent_type = (
+            "bitable_image"
+            if safe_content_type.lower().startswith("image/")
+            else "bitable_file"
+        )
         file_size = str(len(image_bytes))
         resp = requests.post(
             "https://open.feishu.cn/open-apis/drive/v1/medias/upload_all",
@@ -854,15 +898,12 @@ class XHS:
                 }),
             },
             files={
-                "file": (filename, image_bytes, content_type or "image/jpeg"),
+                "file": (filename, image_bytes, safe_content_type),
             },
             timeout=60,
         )
 
-        try:
-            data = resp.json()
-        except ValueError:
-            data = resp.text
+        data, body_key = self.parse_feishu_response(resp)
 
         if not resp.ok:
             raise HTTPException(
@@ -870,16 +911,47 @@ class XHS:
                 detail={
                     "stage": "feishu_media_upload",
                     "http_status": resp.status_code,
-                    "feishu_body": data,
+                    body_key: data,
+                    "feishu_log_id": resp.headers.get("x-tt-logid", ""),
                     "parent_type": parent_type,
                     "parent_node_suffix": app_token[-6:],
                     "file_name": filename,
                     "file_size": file_size,
+                    "app_id_suffix": (os.getenv("FEISHU_APP_ID") or "")[-6:],
+                },
+            )
+
+        if not isinstance(data, dict):
+            raise HTTPException(
+                status_code=500,
+                detail={
+                    "stage": "feishu_media_upload",
+                    "http_status": resp.status_code,
+                    body_key: data,
+                    "feishu_log_id": resp.headers.get("x-tt-logid", ""),
+                    "parent_type": parent_type,
+                    "parent_node_suffix": app_token[-6:],
+                    "file_name": filename,
+                    "file_size": file_size,
+                    "app_id_suffix": (os.getenv("FEISHU_APP_ID") or "")[-6:],
                 },
             )
 
         if data.get("code") != 0:
-            raise HTTPException(status_code=500, detail=f"Feishu media upload failed: {data}")
+            raise HTTPException(
+                status_code=500,
+                detail={
+                    "stage": "feishu_media_upload",
+                    "http_status": resp.status_code,
+                    "feishu_response_json": data,
+                    "feishu_log_id": resp.headers.get("x-tt-logid", ""),
+                    "parent_type": parent_type,
+                    "parent_node_suffix": app_token[-6:],
+                    "file_name": filename,
+                    "file_size": file_size,
+                    "app_id_suffix": (os.getenv("FEISHU_APP_ID") or "")[-6:],
+                },
+            )
 
         file_token = (data.get("data") or {}).get("file_token")
         if not file_token:
@@ -924,23 +996,42 @@ class XHS:
             timeout=60,
         )
 
-        try:
-            data = response.json()
-        except ValueError:
-            data = {
-                "raw_response": response.text[:1000],
-            }
+        data, body_key = self.parse_feishu_response(response)
 
         if not response.ok:
             raise HTTPException(
                 status_code=response.status_code,
-                detail=f"Feishu update HTTP failed: {data}",
+                detail={
+                    "stage": "feishu_update_record",
+                    "http_status": response.status_code,
+                    body_key: data,
+                    "feishu_log_id": response.headers.get("x-tt-logid", ""),
+                    "app_id_suffix": (os.getenv("FEISHU_APP_ID") or "")[-6:],
+                },
+            )
+
+        if not isinstance(data, dict):
+            raise HTTPException(
+                status_code=500,
+                detail={
+                    "stage": "feishu_update_record",
+                    "http_status": response.status_code,
+                    body_key: data,
+                    "feishu_log_id": response.headers.get("x-tt-logid", ""),
+                    "app_id_suffix": (os.getenv("FEISHU_APP_ID") or "")[-6:],
+                },
             )
 
         if data.get("code") != 0:
             raise HTTPException(
                 status_code=500,
-                detail=f"Feishu update record failed: {data}",
+                detail={
+                    "stage": "feishu_update_record",
+                    "http_status": response.status_code,
+                    "feishu_response_json": data,
+                    "feishu_log_id": response.headers.get("x-tt-logid", ""),
+                    "app_id_suffix": (os.getenv("FEISHU_APP_ID") or "")[-6:],
+                },
             )
 
         return data.get("data") or {}
