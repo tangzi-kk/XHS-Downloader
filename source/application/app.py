@@ -786,6 +786,46 @@ class XHS:
 
         return token
 
+    @staticmethod
+    def infer_media_content_type(file_bytes: bytes, content_type: str) -> str:
+        normalized = (content_type or "").split(";")[0].strip().lower()
+        generic_types = {
+            "",
+            "application/octet-stream",
+            "binary/octet-stream",
+            "application/x-binary",
+        }
+
+        if normalized not in generic_types:
+            return normalized
+
+        if file_bytes.startswith(b"\xff\xd8\xff"):
+            return "image/jpeg"
+        if file_bytes.startswith(b"\x89PNG\r\n\x1a\n"):
+            return "image/png"
+        if file_bytes.startswith(b"GIF87a") or file_bytes.startswith(b"GIF89a"):
+            return "image/gif"
+        if file_bytes.startswith(b"RIFF") and file_bytes[8:12] == b"WEBP":
+            return "image/webp"
+        if len(file_bytes) > 12 and file_bytes[4:8] == b"ftyp":
+            return "video/mp4"
+
+        return normalized or "image/jpeg"
+
+    @staticmethod
+    def normalize_media_filename(filename: str, content_type: str) -> str:
+        root, extension = os.path.splitext(filename)
+        extension = extension.lower()
+
+        if extension and extension != ".bin":
+            return filename
+
+        guessed_extension = mimetypes.guess_extension(content_type) or ".jpg"
+        if guessed_extension == ".jpe":
+            guessed_extension = ".jpg"
+
+        return f"{root or 'image'}{guessed_extension}"
+
     def download_image_bytes(self, image_url: str):
         resp = requests.get(
             image_url,
@@ -796,12 +836,11 @@ class XHS:
 
         image_bytes = resp.content
         content_type = resp.headers.get("Content-Type", "image/jpeg").split(";")[0].strip()
+        content_type = self.infer_media_content_type(image_bytes, content_type)
 
         path = urlparse(image_url).path
         filename = path.split("/")[-1] or "image.jpg"
-        if "." not in filename:
-            ext = mimetypes.guess_extension(content_type) or ".jpg"
-            filename = f"image{ext}"
+        filename = self.normalize_media_filename(filename, content_type)
 
         return image_bytes, filename, content_type
 
