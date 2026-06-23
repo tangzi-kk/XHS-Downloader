@@ -17,6 +17,7 @@ import os
 import subprocess
 import tempfile
 import mimetypes
+import json
 import requests
 from fastapi import FastAPI, Body, HTTPException
 from fastapi.responses import RedirectResponse
@@ -836,6 +837,8 @@ class XHS:
         tenant_access_token: str,
         app_token: str,
     ):
+        parent_type = "bitable_image"
+        file_size = str(len(image_bytes))
         resp = requests.post(
             "https://open.feishu.cn/open-apis/drive/v1/medias/upload_all",
             headers={
@@ -843,17 +846,37 @@ class XHS:
             },
             data={
                 "file_name": filename,
-                "parent_type": "bitable_image",
+                "parent_type": parent_type,
                 "parent_node": app_token,
-                "size": str(len(image_bytes)),
+                "size": file_size,
+                "extra": json.dumps({
+                    "drive_route_token": app_token,
+                }),
             },
             files={
-                "file": (filename, image_bytes, content_type),
+                "file": (filename, image_bytes, content_type or "image/jpeg"),
             },
-            timeout=120,
+            timeout=60,
         )
-        resp.raise_for_status()
-        data = resp.json()
+
+        try:
+            data = resp.json()
+        except ValueError:
+            data = resp.text
+
+        if not resp.ok:
+            raise HTTPException(
+                status_code=resp.status_code,
+                detail={
+                    "stage": "feishu_media_upload",
+                    "http_status": resp.status_code,
+                    "feishu_body": data,
+                    "parent_type": parent_type,
+                    "parent_node_suffix": app_token[-6:],
+                    "file_name": filename,
+                    "file_size": file_size,
+                },
+            )
 
         if data.get("code") != 0:
             raise HTTPException(status_code=500, detail=f"Feishu media upload failed: {data}")
@@ -1019,6 +1042,8 @@ class XHS:
                 }
             except requests.HTTPError as e:
                 raise HTTPException(status_code=500, detail=f"HTTP error: {str(e)}")
+            except HTTPException:
+                raise
             except Exception as e:
                 raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
 
