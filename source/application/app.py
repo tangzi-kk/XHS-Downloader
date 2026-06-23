@@ -808,6 +808,12 @@ class XHS:
         if file_bytes.startswith(b"RIFF") and file_bytes[8:12] == b"WEBP":
             return "image/webp"
         if len(file_bytes) > 12 and file_bytes[4:8] == b"ftyp":
+            brand = file_bytes[8:12]
+            compatible_brands = file_bytes[16:64]
+            if brand in {b"avif", b"avis"} or b"avif" in compatible_brands:
+                return "image/avif"
+            if brand in {b"heic", b"heix", b"hevc", b"hevx", b"mif1"}:
+                return "image/heic"
             return "video/mp4"
 
         return normalized or "image/jpeg"
