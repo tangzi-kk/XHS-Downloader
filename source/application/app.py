@@ -1182,7 +1182,150 @@ class XHS:
                 raise
             except Exception as e:
                 raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
+                @server.post("/feishu_upload_video_bundle")
+        async def feishu_upload_video_bundle(
+            video_url: str = Body(..., embed=True),
+            record_id: str = Body(..., embed=True),
+            cover_field: str = Body("视频封面", embed=True),
+            video_field: str = Body("原视频", embed=True),
+        ):
+            clean_record_id = str(record_id or "").strip()
+            clean_cover_field = str(cover_field or "").strip()
+            clean_video_field = str(video_field or "").strip()
 
+            if not clean_record_id:
+                raise HTTPException(
+                    status_code=400,
+                    detail="record_id is required",
+                )
+
+            if not clean_cover_field or not clean_video_field:
+                raise HTTPException(
+                    status_code=400,
+                    detail="cover_field and video_field are required",
+                )
+
+            app_token = os.getenv("FEISHU_BITABLE_APP_TOKEN")
+            if not app_token:
+                raise HTTPException(
+                    status_code=500,
+                    detail="Missing FEISHU_BITABLE_APP_TOKEN",
+                )
+
+            try:
+                tenant_access_token = self.get_tenant_access_token()
+
+                video_bytes, video_filename, video_content_type = (
+                    self.download_image_bytes(video_url)
+                )
+
+                if not self.is_video_media(
+                    video_filename,
+                    video_content_type,
+                ):
+                    raise HTTPException(
+                        status_code=400,
+                        detail=(
+                            "video_url is not a direct video file. "
+                            "Please use the direct MP4 download URL."
+                        ),
+                    )
+
+                max_video_bytes = int(
+                    os.getenv(
+                        "MAX_VIDEO_UPLOAD_BYTES",
+                        str(30 * 1024 * 1024),
+                    )
+                )
+
+                if len(video_bytes) > max_video_bytes:
+                    raise HTTPException(
+                        status_code=413,
+                        detail=(
+                            f"Video is too large: {len(video_bytes)} bytes. "
+                            f"Current limit: {max_video_bytes} bytes."
+                        ),
+                    )
+
+                cover_bytes, cover_filename, cover_content_type = (
+                    self.extract_video_cover(
+                        video_bytes,
+                        video_filename,
+                    )
+                )
+
+                cover_file_token = self.upload_image_to_feishu(
+                    image_bytes=cover_bytes,
+                    filename=cover_filename,
+                    content_type=cover_content_type,
+                    tenant_access_token=tenant_access_token,
+                    app_token=app_token,
+                )
+
+                video_file_token = self.upload_image_to_feishu(
+                    image_bytes=video_bytes,
+                    filename=video_filename,
+                    content_type=video_content_type,
+                    tenant_access_token=tenant_access_token,
+                    app_token=app_token,
+                )
+
+                update_data = self.update_bitable_record(
+                    record_id=clean_record_id,
+                    fields={
+                        clean_cover_field: [
+                            {
+                                "file_token": cover_file_token,
+                            }
+                        ],
+                        clean_video_field: [
+                            {
+                                "file_token": video_file_token,
+                            }
+                        ],
+                    },
+                )
+
+                return {
+                    "success": True,
+                    "message": "Video cover and original video uploaded successfully",
+                    "record_id": clean_record_id,
+                    "cover_field": clean_cover_field,
+                    "video_field": clean_video_field,
+                    "cover_file_token": cover_file_token,
+                    "video_file_token": video_file_token,
+                    "data": update_data,
+                }
+
+            except requests.RequestException as e:
+                raise HTTPException(
+                    status_code=502,
+                    detail={
+                        "stage": "download_video",
+                        "detail": str(e),
+                    },
+                )
+
+            except HTTPException:
+                raise
+
+            except FileNotFoundError:
+                raise HTTPException(
+                    status_code=500,
+                    detail=(
+                        "ffmpeg is not available in Render. "
+                        "Video cover cannot be generated."
+                    ),
+                )
+
+            except Exception as e:
+                raise HTTPException(
+                    status_code=500,
+                    detail={
+                        "stage": "video_bundle",
+                        "detail": str(e),
+                    },
+                )
         @server.post("/feishu_update_record")
         async def feishu_update_record(
             record_id: str = Body(..., embed=True),
