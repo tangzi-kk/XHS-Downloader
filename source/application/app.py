@@ -1182,7 +1182,7 @@ class XHS:
                 raise
             except Exception as e:
                 raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
-                @server.post("/feishu_upload_video_bundle")
+        @server.post("/feishu_upload_video_bundle")
         async def feishu_upload_video_bundle(
             video_url: str = Body(..., embed=True),
             record_id: str = Body(..., embed=True),
