@@ -42,6 +42,13 @@ async def mcp_server(
         )
 
 
+async def video_worker():
+    from source.application.video_worker import run_video_worker
+
+    async with XHS(**Settings().run()) as xhs:
+        await run_video_worker(xhs)
+
+
 if __name__ == "__main__":
     with suppress(
         KeyboardInterrupt,
@@ -55,5 +62,7 @@ if __name__ == "__main__":
         elif argv[1].upper() == "MCP":
             run(mcp_server())
             # run(mcp_server("stdio"))
+        elif argv[1].casefold() == "video-worker":
+            run(video_worker())
         else:
             cli()

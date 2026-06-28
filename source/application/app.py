@@ -7,11 +7,12 @@ from asyncio import (
     sleep,
     Future,
     CancelledError,
+    to_thread,
 )
 from contextlib import suppress
 from datetime import datetime
 from re import compile
-from urllib.parse import urlparse, unquote
+from urllib.parse import urlparse
 from textwrap import dedent
 import os
 import subprocess
@@ -65,6 +66,7 @@ from .explore import Explore
 from .image import Image
 from .request import Html
 from .video import Video
+from .video_worker import FeishuVideoTaskStore, enqueue_video_bundle
 from rich import print
 
 __all__ = ["XHS"]
@@ -625,7 +627,7 @@ class XHS:
     ) -> None:
         self.logging(
             _(
-                '程序会自动读取并提取剪贴板中的小红书作品链接，并自动下载链接对应的作品文件，如需关闭，请点击关闭按钮，或者向剪贴板写入 [...]
+                '程序会自动读取并提取剪贴板中的小红书作品链接，并自动下载链接对应的作品文件，如需关闭，请点击关闭按钮，或者向剪贴板写入 "close" 文本！'
             ),
             style=MASTER,
         )
@@ -849,152 +851,6 @@ class XHS:
         filename = self.normalize_media_filename(filename, content_type)
 
         return image_bytes, filename, content_type
-
-    @staticmethod
-    def split_video_candidates(raw_value) -> list[str]:
-        """
-        将可能由换行符、%0A 或数组传入的多个视频候选地址，
-        整理成一条条可单独请求的 URL。
-
-        这些候选地址通常是同一个视频的备用 CDN 地址，
-        不是多个不同视频。
-        """
-        if isinstance(raw_value, (list, tuple)):
-            raw_items = raw_value
-        else:
-            raw_items = [raw_value]
-
-        candidates = []
-
-        for raw_item in raw_items:
-            decoded = unquote(str(raw_item or ""))
-
-            for item in decoded.replace("\r\n", "\n").replace("\r", "\n").split("\n"):
-                url = item.strip().strip('"').strip("'")
-
-                if not url:
-                    continue
-
-                if not url.startswith(("http://", "https://")):
-                    continue
-
-                # 小红书 CDN 视频地址优先走 HTTPS
-                if url.startswith("http://"):
-                    url = "https://" + url[len("http://"):]
-
-                if url not in candidates:
-                    candidates.append(url)
-
-        return candidates
-
-    def download_video_bytes(self, raw_value):
-        """
-        逐条尝试下载视频候选链接。
-        任意一条成功就停止；全部失败时返回 None，不抛 502。
-        """
-        candidates = self.split_video_candidates(raw_value)
-
-        if not candidates:
-            return None, "", "", "", "没有可用的视频链接"
-
-        headers = {
-            "User-Agent": (
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                "AppleWebKit/537.36 (KHTML, like Gecko) "
-                "Chrome/124.0.0.0 Safari/537.36"
-            ),
-            "Referer": "https://www.xiaohongshu.com/",
-            "Origin": "https://www.xiaohongshu.com",
-            "Accept": "*/*",
-            "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
-        }
-
-        max_video_bytes = 200 * 1024 * 1024
-        errors = []
-
-        for index, candidate_url in enumerate(candidates, start=1):
-            try:
-                print(f"[video] 正在尝试第 {index} 条候选链接")
-
-                with requests.get(
-                    candidate_url,
-                    headers=headers,
-                    timeout=(15, 90),
-                    stream=True,
-                ) as response:
-                    response.raise_for_status()
-
-                    chunks = []
-                    total_size = 0
-
-                    for chunk in response.iter_content(chunk_size=1024 * 1024):
-                        if not chunk:
-                            continue
-
-                        total_size += len(chunk)
-
-                        if total_size > max_video_bytes:
-                            raise RuntimeError(
-                                "视频超过 200MB，为避免 Render 内存不足，已停止下载"
-                            )
-
-                        chunks.append(chunk)
-
-                    video_bytes = b"".join(chunks)
-
-                    if not video_bytes:
-                        raise RuntimeError("下载到的视频文件为空")
-
-                    content_type = self.infer_media_content_type(
-                        video_bytes,
-                        response.headers.get(
-                            "Content-Type",
-                            "application/octet-stream",
-                        ),
-                    )
-
-                    source_filename = (
-                        urlparse(candidate_url).path.split("/")[-1]
-                        or "xhs_video.mp4"
-                    )
-
-                    source_filename = self.normalize_media_filename(
-                        source_filename,
-                        content_type,
-                    )
-
-                    if not self.is_video_media(
-                        source_filename,
-                        content_type,
-                    ):
-                        raise RuntimeError(
-                            f"返回内容不是视频，Content-Type={content_type}"
-                        )
-
-                    print(f"[video] 第 {index} 条候选链接下载成功")
-
-                    return (
-                        video_bytes,
-                        source_filename,
-                        content_type,
-                        candidate_url,
-                        "",
-                    )
-
-            except Exception as error:
-                error_text = str(error)[:220]
-                print(
-                    f"[video] 第 {index} 条候选链接失败：{error_text}"
-                )
-                errors.append(f"第 {index} 条：{error_text}")
-
-        return (
-            None,
-            "",
-            "",
-            candidates[0],
-            "；".join(errors[-3:]) or "所有视频候选链接下载失败",
-        )
 
     @staticmethod
     def is_video_media(filename: str, content_type: str) -> bool:
@@ -1332,10 +1188,11 @@ class XHS:
 
         @server.post("/feishu_upload_video_bundle")
         async def feishu_upload_video_bundle(
-            video_url: str = Body(..., embed=True),
+            video_url: object = Body(..., embed=True),
             record_id: str = Body(..., embed=True),
             cover_field: str = Body("视频封面", embed=True),
             video_field: str = Body("原视频", embed=True),
+            note_url: str | None = Body(None, embed=True),
         ):
             clean_record_id = str(record_id or "").strip()
             clean_cover_field = str(cover_field or "").strip()
@@ -1353,135 +1210,36 @@ class XHS:
                     detail="cover_field and video_field are required",
                 )
 
-            app_token = os.getenv("FEISHU_BITABLE_APP_TOKEN")
-            if not app_token:
+            if clean_cover_field != "视频封面" or clean_video_field != "原视频":
                 raise HTTPException(
-                    status_code=500,
-                    detail="Missing FEISHU_BITABLE_APP_TOKEN",
+                    status_code=400,
+                    detail="cover_field 仅支持‘视频封面’，video_field 仅支持‘原视频’",
                 )
 
             try:
-                tenant_access_token = self.get_tenant_access_token()
-
-                (
-                    video_bytes,
-                    video_filename,
-                    video_content_type,
-                    downloaded_video_url,
-                    download_error,
-                ) = self.download_video_bytes(video_url)
-
-                if video_bytes is None:
-                    return {
-                        "success": False,
-                        "status": "link_only",
-                        "message": "视频附件未上传，但原始视频链接仍可保留",
-                        "record_id": clean_record_id,
-                        "source_video_url": video_url,
-                        "downloaded_video_url": downloaded_video_url,
-                        "download_error": download_error,
-                        "cover_file_token": "",
-                        "video_file_token": "",
-                    }
-
-                if not self.is_video_media(
-                    video_filename,
-                    video_content_type,
-                ):
-                    raise HTTPException(
-                        status_code=400,
-                        detail=(
-                            "video_url is not a direct video file. "
-                            "Please use the direct MP4 download URL."
-                        ),
+                store = getattr(self, "_feishu_video_task_store", None)
+                if store is None:
+                    store = FeishuVideoTaskStore(
+                        token_provider=self.get_tenant_access_token,
                     )
-
-                max_video_bytes = int(
-                    os.getenv(
-                        "MAX_VIDEO_UPLOAD_BYTES",
-                        str(30 * 1024 * 1024),
-                    )
+                    self._feishu_video_task_store = store
+                return await to_thread(
+                    enqueue_video_bundle,
+                    store,
+                    clean_record_id,
+                    video_url,
+                    note_url,
                 )
-
-                if len(video_bytes) > max_video_bytes:
-                    raise HTTPException(
-                        status_code=413,
-                        detail=(
-                            f"Video is too large: {len(video_bytes)} bytes. "
-                            f"Current limit: {max_video_bytes} bytes."
-                        ),
-                    )
-
-                cover_bytes, cover_filename, cover_content_type = (
-                    self.extract_video_cover(
-                        video_bytes,
-                        video_filename,
-                    )
-                )
-
-                cover_file_token = self.upload_image_to_feishu(
-                    image_bytes=cover_bytes,
-                    filename=cover_filename,
-                    content_type=cover_content_type,
-                    tenant_access_token=tenant_access_token,
-                    app_token=app_token,
-                )
-
-                video_file_token = self.upload_image_to_feishu(
-                    image_bytes=video_bytes,
-                    filename=video_filename,
-                    content_type=video_content_type,
-                    tenant_access_token=tenant_access_token,
-                    app_token=app_token,
-                )
-
-                update_data = self.update_bitable_record(
-                    record_id=clean_record_id,
-                    fields={
-                        clean_cover_field: [
-                            {
-                                "file_token": cover_file_token,
-                            }
-                        ],
-                        clean_video_field: [
-                            {
-                                "file_token": video_file_token,
-                            }
-                        ],
-                    },
-                )
-
-                return {
-                    "success": True,
-                    "message": "Video cover and original video uploaded successfully",
-                    "record_id": clean_record_id,
-                    "cover_field": clean_cover_field,
-                    "video_field": clean_video_field,
-                    "cover_file_token": cover_file_token,
-                    "video_file_token": video_file_token,
-                    "data": update_data,
-                }
-
-            except HTTPException:
-                raise
-
-            except FileNotFoundError:
-                raise HTTPException(
-                    status_code=500,
-                    detail=(
-                        "ffmpeg is not available in Render. "
-                        "Video cover cannot be generated."
-                    ),
-                )
-
+            except ValueError as error:
+                raise HTTPException(status_code=400, detail=str(error)) from error
             except Exception as e:
                 raise HTTPException(
                     status_code=500,
                     detail={
-                        "stage": "video_bundle",
+                        "stage": "video_queue",
                         "detail": str(e),
                     },
-                )
+                ) from e
 
         @server.post("/feishu_update_record")
         async def feishu_update_record(
