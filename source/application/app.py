@@ -625,7 +625,7 @@ class XHS:
     ) -> None:
         self.logging(
             _(
-                '程序会自动读取并提取剪贴板中的小红书作品链接，并自动下载链接对应的作品文件，如需关闭，请点击关闭按钮，或者向剪贴板写入 "close" 文本！'
+                '程序会自动读取并提取剪贴板中的小红书作品链接，并自动下载链接对应的作品文件，如需关闭，请点击关闭按钮，或者向剪贴板写入 [...]
             ),
             style=MASTER,
         )
@@ -849,7 +849,8 @@ class XHS:
         filename = self.normalize_media_filename(filename, content_type)
 
         return image_bytes, filename, content_type
-            @staticmethod
+
+    @staticmethod
     def split_video_candidates(raw_value) -> list[str]:
         """
         将可能由换行符、%0A 或数组传入的多个视频候选地址，
@@ -1277,6 +1278,7 @@ class XHS:
                 else:
                     msg = _("获取小红书作品数据失败")
             return ExtractData(message=msg, params=extract, data=data)
+
         @server.post("/feishu_upload_v2")
         @server.post("/feishu_upload")
         async def feishu_upload(
@@ -1327,6 +1329,7 @@ class XHS:
                 raise
             except Exception as e:
                 raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
+
         @server.post("/feishu_upload_video_bundle")
         async def feishu_upload_video_bundle(
             video_url: str = Body(..., embed=True),
@@ -1360,26 +1363,26 @@ class XHS:
             try:
                 tenant_access_token = self.get_tenant_access_token()
 
-(
-    video_bytes,
-    video_filename,
-    video_content_type,
-    downloaded_video_url,
-    download_error,
-) = self.download_video_bytes(video_url)
+                (
+                    video_bytes,
+                    video_filename,
+                    video_content_type,
+                    downloaded_video_url,
+                    download_error,
+                ) = self.download_video_bytes(video_url)
 
-if video_bytes is None:
-    return {
-        "success": False,
-        "status": "link_only",
-        "message": "视频附件未上传，但视频链接仍可保留",
-        "record_id": clean_record_id,
-        "source_video_url": video_url,
-        "downloaded_video_url": downloaded_video_url,
-        "download_error": download_error,
-        "cover_file_token": "",
-        "video_file_token": "",
-    }
+                if video_bytes is None:
+                    return {
+                        "success": False,
+                        "status": "link_only",
+                        "message": "视频附件未上传，但原始视频链接仍可保留",
+                        "record_id": clean_record_id,
+                        "source_video_url": video_url,
+                        "downloaded_video_url": downloaded_video_url,
+                        "download_error": download_error,
+                        "cover_file_token": "",
+                        "video_file_token": "",
+                    }
 
                 if not self.is_video_media(
                     video_filename,
@@ -1459,15 +1462,6 @@ if video_bytes is None:
                     "data": update_data,
                 }
 
-            except requests.RequestException as e:
-                raise HTTPException(
-                    status_code=502,
-                    detail={
-                        "stage": "download_video",
-                        "detail": str(e),
-                    },
-                )
-
             except HTTPException:
                 raise
 
@@ -1488,147 +1482,7 @@ if video_bytes is None:
                         "detail": str(e),
                     },
                 )
-                @server.post("/feishu_upload_video_v3")
-        async def feishu_upload_video_v3(
-            video_url: str = Body("", embed=True),
-            video_urls: list[str] | None = Body(None, embed=True),
-        ):
-            """
-            上传小红书视频到飞书。
 
-            输入：
-            {
-              "video_url": "单条视频地址，或多条换行分隔的候选地址"
-            }
-
-            或：
-            {
-              "video_urls": [
-                "候选地址1",
-                "候选地址2"
-              ]
-            }
-
-            返回：
-            - success：原视频和视频封面都上传成功
-            - video_only：原视频上传成功，但封面生成失败
-            - link_only：视频源无法下载，保留外链，不让整条记录失败
-            """
-            app_token = os.getenv("FEISHU_BITABLE_APP_TOKEN")
-
-            if not app_token:
-                raise HTTPException(
-                    status_code=500,
-                    detail="Missing FEISHU_BITABLE_APP_TOKEN",
-                )
-
-            raw_video_value = video_urls if video_urls else video_url
-            candidates = self.split_video_candidates(raw_video_value)
-
-            source_video_url = candidates[0] if candidates else ""
-
-            if not candidates:
-                return {
-                    "status": "link_only",
-                    "message": "没有检测到可上传的视频地址",
-                    "source_video_url": "",
-                    "downloaded_video_url": "",
-                    "video_file_token": "",
-                    "cover_file_token": "",
-                    "cover_error": "",
-                    "download_error": "video_url is empty",
-                }
-
-            try:
-                (
-                    video_bytes,
-                    video_filename,
-                    video_content_type,
-                    downloaded_video_url,
-                    download_error,
-                ) = self.download_video_bytes(raw_video_value)
-
-                # 所有候选视频链接均失败：
-                # 返回 200，让飞书保留视频外链，不让整条素材报废。
-                if video_bytes is None:
-                    return {
-                        "status": "link_only",
-                        "message": "视频附件未上传，但原始视频链接仍可保留",
-                        "source_video_url": source_video_url,
-                        "downloaded_video_url": downloaded_video_url,
-                        "video_file_token": "",
-                        "cover_file_token": "",
-                        "cover_error": "",
-                        "download_error": download_error,
-                    }
-
-                tenant_access_token = self.get_tenant_access_token()
-
-                # 这里复用现有上传函数。
-                # 因 content_type 是 video/mp4，它会自动使用 bitable_file。
-                video_file_token = self.upload_image_to_feishu(
-                    image_bytes=video_bytes,
-                    filename=video_filename,
-                    content_type=video_content_type,
-                    tenant_access_token=tenant_access_token,
-                    app_token=app_token,
-                )
-
-                cover_file_token = ""
-                cover_error = ""
-
-                try:
-                    (
-                        cover_bytes,
-                        cover_filename,
-                        cover_content_type,
-                    ) = self.extract_video_cover(
-                        video_bytes,
-                        video_filename,
-                    )
-
-                    cover_file_token = self.upload_image_to_feishu(
-                        image_bytes=cover_bytes,
-                        filename=cover_filename,
-                        content_type=cover_content_type,
-                        tenant_access_token=tenant_access_token,
-                        app_token=app_token,
-                    )
-
-                except Exception as error:
-                    cover_error = str(error)[:500]
-                    print(f"[video] 视频已上传，但封面生成失败：{cover_error}")
-
-                return {
-                    "status": (
-                        "success"
-                        if cover_file_token
-                        else "video_only"
-                    ),
-                    "message": (
-                        "视频和封面上传成功"
-                        if cover_file_token
-                        else "视频上传成功，但封面未生成"
-                    ),
-                    "source_video_url": source_video_url,
-                    "downloaded_video_url": downloaded_video_url,
-                    "video_file_token": video_file_token,
-                    "cover_file_token": cover_file_token,
-                    "cover_error": cover_error,
-                    "download_error": "",
-                }
-
-            except HTTPException:
-                raise
-
-            except Exception as error:
-                raise HTTPException(
-                    status_code=500,
-                    detail={
-                        "stage": "feishu_upload_video_v3",
-                        "detail": str(error)[:1000],
-                    },
-                )       
         @server.post("/feishu_update_record")
         async def feishu_update_record(
             record_id: str = Body(..., embed=True),
@@ -1695,7 +1549,7 @@ if video_bytes is None:
                 get_detail_data
                 功能：输入小红书作品链接，返回该作品的信息数据，不会下载文件。
                 参数：
-                - url（��填）：小红书作品链接
+                - url（必填）：小红书作品链接
                 返回：
                 - message：结果提示
                 - data：作品信息数据
@@ -1704,7 +1558,7 @@ if video_bytes is None:
                 功能：输入小红书作品链接，下载作品文件，默认不返回作品信息数据。
                 参数：
                 - url（必填）：小红书作品链接
-                - index（选填）：根据用户指定的图片序号（如用户说“下载第1和第3张”时，index应为 [1, 3]），生成由所需图片序号组成的列表；如果用户未指定序号，则该字段为 None
+                - index（选填）：根据用户指定的图片序号（如用户说"下载第1和第3张"时，index应为 [1, 3]），生成由所需图片序号组成的列表；如果用户未指定，不限制
                 - return_data（可选）：是否返回作品信息数据；如需返回作品信息数据，设置此参数为 true，默认值为 false
                 返回：
                 - message：结果提示
@@ -1764,7 +1618,7 @@ if video_bytes is None:
                 - https://www.xiaohongshu.com/explore/...
                 - https://www.xiaohongshu.com/discovery/item/...
                 - https://xhslink.com/...
-                index（选填）：根据用户指定的图片序号（如用户说“下载第1和第3张”时，index应为 [1, 3]），生成由所需图片序号组成的列表；如果用户未指定序号，则该字段为 None
+                index（选填）：根据用户指定的图片序号（如用户说"下载第1和第3张"时，index应为 [1, 3]），生成由所需图片序号组成的列表；如果用户未指定，不限制
                 return_data（可选）：是否返回作品信息数据；如需返回作品信息数据，设置此参数为 true，默认值为 false
 
                 返回：
