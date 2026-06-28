@@ -1360,9 +1360,26 @@ class XHS:
             try:
                 tenant_access_token = self.get_tenant_access_token()
 
-                video_bytes, video_filename, video_content_type = (
-                    self.download_image_bytes(video_url)
-                )
+(
+    video_bytes,
+    video_filename,
+    video_content_type,
+    downloaded_video_url,
+    download_error,
+) = self.download_video_bytes(video_url)
+
+if video_bytes is None:
+    return {
+        "success": False,
+        "status": "link_only",
+        "message": "视频附件未上传，但视频链接仍可保留",
+        "record_id": clean_record_id,
+        "source_video_url": video_url,
+        "downloaded_video_url": downloaded_video_url,
+        "download_error": download_error,
+        "cover_file_token": "",
+        "video_file_token": "",
+    }
 
                 if not self.is_video_media(
                     video_filename,
