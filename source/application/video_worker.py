@@ -236,7 +236,7 @@ def _enqueue_video_bundle(
         )
     if pending:
         parent_fields = {
-            "视频处理状态": "PROCESSING",
+            "视频处理状态": "AWAITING",
             "视频处理进度": f"0 / {len(urls)}",
             "视频总数": len(urls),
             "视频成功数": 0,
@@ -283,13 +283,13 @@ def aggregate_parent_tasks(tasks: list[dict[str, Any]]) -> dict[str, Any]:
 
     if total == 0:
         parent_status = "NO_VIDEO"
-    elif any(status in {"PENDING", "RUNNING", "RETRY_WAIT"} for status in statuses):
+    elif any(status == "RUNNING" for status in statuses):
         parent_status = "PROCESSING"
+    elif any(status in {"PENDING", "RETRY_WAIT"} for status in statuses):
+        parent_status = "AWAITING"
     elif succeeded == total:
         parent_status = "VIDEO_COMPLETE"
-    elif failed_count > 0 and succeeded > 0:
-        parent_status = "PARTIAL_FAILED"
-    elif succeeded == 0 and failed_count > 0:
+    elif failed_count > 0:
         parent_status = "PARTIAL_FAILED"
     else:
         parent_status = "AWAITING"
@@ -467,6 +467,28 @@ class FeishuVideoTaskStore:
             json={"fields": fields},
         )
 
+    def get_task(self, task_record_id: str) -> dict[str, Any] | None:
+        """按飞书任务记录 record_id 直接读取单条任务。
+
+        使用飞书记录详情接口：
+            GET /bitable/v1/apps/{app_token}/tables/{task_table_id}/records/{task_record_id}
+        返回任务记录（含 record_id 和 fields），不存在时返回 None。
+        """
+        try:
+            data = self.client.request(
+                "GET",
+                f"{self._records_path(self.task_table_id)}/{task_record_id}",
+            ).get("data", {})
+        except FeishuAPIError as error:
+            # 5xx 视为服务端错误，向上抛出；其余（4xx / 业务码非 0）视为记录不存在
+            if error.status_code is not None and error.status_code >= 500:
+                raise
+            return None
+        record = data.get("record")
+        if not record:
+            return None
+        return record
+
     def list_parent_tasks(self, parent_record_id: str) -> list[dict[str, Any]]:
         return self._search([self._condition("父素材记录ID", parent_record_id)])
 
@@ -605,15 +627,13 @@ class VideoTaskWorker:
             except Exception as error:
                 duration = int(time.time() * 1000) - start_ms
                 retry_count = retry_count_before + 1
-                manual = bool(
-                    getattr(error, "requires_manual_refresh", False)
-                ) and retry_count >= VIDEO_MAX_RETRIES
+                retry_capped = retry_count >= self.max_retries
                 delay = self._retry_delay(retry_count)
                 detail = (
                     f"{type(error).__name__}: {error}\n"
                     f"{traceback.format_exc(limit=8)}"
                 )[-5000:]
-                new_status = "FAILED" if manual else "RETRY_WAIT"
+                new_status = "FAILED" if retry_capped else "RETRY_WAIT"
                 self.store.update_task(
                     task_id,
                     {
@@ -916,14 +936,11 @@ def retry_video_task(
     if not task_record_id:
         raise ValueError("task_record_id is required")
 
-    # 查单个任务记录
-    tasks = store._search(
-        [FeishuVideoTaskStore._condition("记录 ID", task_record_id)]
-    )
-    if not tasks:
+    # 按飞书任务记录 record_id 直接读取单条任务，不依赖普通字段搜索
+    task = store.get_task(task_record_id)
+    if not task:
         raise ValueError(f"任务不存在：{task_record_id}")
 
-    task = tasks[0]
     current_status = str(_field(task, "状态", ""))
 
     if current_status not in {"RETRY_WAIT", "FAILED"}:

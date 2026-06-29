@@ -16,6 +16,7 @@ from source.application.video_worker import (
     enqueue_video_bundle,
     extract_origin_video_urls,
     parse_real_video_urls,
+    retry_video_task,
 )
 
 
@@ -55,6 +56,12 @@ class FakeStore:
     def update_task(self, record_id, fields):
         task = next(t for t in self.tasks if t["record_id"] == record_id)
         task["fields"].update(fields)
+
+    def get_task(self, task_record_id):
+        task = next((t for t in self.tasks if t["record_id"] == task_record_id), None)
+        if task is None:
+            return None
+        return {"record_id": task["record_id"], "fields": dict(task["fields"])}
 
     def list_parent_tasks(self, parent):
         return [t for t in self.tasks if t["fields"]["父素材记录ID"] == parent]
@@ -158,6 +165,25 @@ class AggregateTests(unittest.TestCase):
         self.assertEqual(fields["视频封面"], [{"file_token": "c1"}, {"file_token": "c2"}])
         self.assertEqual(fields["视频处理进度"], "2 / 2")
 
+    def test_new_enqueue_parent_is_awaiting_not_processing(self):
+        store = FakeStore()
+        enqueue_video_bundle(store, "rec-1", "https://cdn.example.com/1.mp4")
+        self.assertEqual(store.parent_updates[-1][1]["视频处理状态"], "AWAITING")
+
+    def test_pending_without_running_is_awaiting(self):
+        fields = aggregate_parent_tasks([
+            {"fields": {"视频序号": 1, "状态": "PENDING"}},
+            {"fields": {"视频序号": 2, "状态": "PENDING"}},
+        ])
+        self.assertEqual(fields["视频处理状态"], "AWAITING")
+
+    def test_running_present_is_processing(self):
+        fields = aggregate_parent_tasks([
+            {"fields": {"视频序号": 1, "状态": "RUNNING"}},
+            {"fields": {"视频序号": 2, "状态": "PENDING"}},
+        ])
+        self.assertEqual(fields["视频处理状态"], "PROCESSING")
+
 
 class WorkerTests(unittest.IsolatedAsyncioTestCase):
     async def test_refresh_exception_becomes_manual_refresh_candidate(self):
@@ -207,6 +233,62 @@ class WorkerTests(unittest.IsolatedAsyncioTestCase):
         workers = [VideoTaskWorker(store, process) for _ in range(3)]
         await asyncio.gather(*(worker.run_once() for worker in workers))
         self.assertEqual(maximum, 1)
+
+    async def test_failure_below_max_retries_stays_retry_wait(self):
+        store = FakeStore()
+        enqueue_video_bundle(store, "rec-1", "https://cdn.example.com/1.mp4")
+
+        async def process(task):
+            raise RuntimeError("普通异常")
+
+        worker = VideoTaskWorker(
+            store, process, max_retries=3, retry_base_seconds=0, dispatch_interval_seconds=0,
+        )
+        await worker.run_once()
+        self.assertEqual(store.tasks[0]["fields"]["状态"], "RETRY_WAIT")
+        self.assertEqual(store.tasks[0]["fields"]["重试次数"], 1)
+
+    async def test_failure_at_max_retries_becomes_failed(self):
+        store = FakeStore()
+        enqueue_video_bundle(store, "rec-1", "https://cdn.example.com/1.mp4")
+        # 预置重试次数使其已达上限的前一次
+        store.tasks[0]["fields"]["重试次数"] = 2
+        store.tasks[0]["fields"]["状态"] = "RETRY_WAIT"
+        store.tasks[0]["fields"]["下次重试时间"] = 0
+
+        async def process(task):
+            raise RuntimeError("普通异常")
+
+        worker = VideoTaskWorker(
+            store, process, max_retries=3, retry_base_seconds=0, dispatch_interval_seconds=0,
+        )
+        await worker.run_once()
+        self.assertEqual(store.tasks[0]["fields"]["状态"], "FAILED")
+        self.assertEqual(store.tasks[0]["fields"]["重试次数"], 3)
+
+
+class RetryVideoTaskTests(unittest.TestCase):
+    def test_retry_uses_real_record_id_not_field(self):
+        store = FakeStore()
+        enqueue_video_bundle(store, "rec-1", "https://cdn.example.com/1.mp4")
+        store.tasks[0]["fields"].update({"状态": "FAILED", "最后错误": "测试失败"})
+        result = retry_video_task(store, "task-1")
+        self.assertTrue(result["success"])
+        self.assertEqual(result["previous_status"], "FAILED")
+        self.assertEqual(result["new_status"], "PENDING")
+        self.assertEqual(store.tasks[0]["fields"]["状态"], "PENDING")
+
+    def test_retry_missing_task_raises_clear_error(self):
+        store = FakeStore()
+        with self.assertRaises(ValueError):
+            retry_video_task(store, "nonexistent-id")
+
+    def test_retry_rejects_non_failed_status(self):
+        store = FakeStore()
+        enqueue_video_bundle(store, "rec-1", "https://cdn.example.com/1.mp4")
+        # 默认状态 PENDING 不可重试
+        with self.assertRaises(ValueError):
+            retry_video_task(store, "task-1")
 
 
 if __name__ == "__main__":
