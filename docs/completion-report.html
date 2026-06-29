@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XHS-Downloader 视频队列 — 断电恢复完成报告</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --card: #161b22;
+    --border: #30363d;
+    --text: #c9d1d9;
+    --muted: #8b949e;
+    --accent: #58a6ff;
+    --green: #3fb950;
+    --yellow: #d2991d;
+    --red: #f85149;
+    --purple: #bc8cff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans SC', sans-serif;
+    line-height: 1.6;
+    padding: 2rem;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+  h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), var(--purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.25rem;
+  }
+  h2 {
+    font-size: 1.25rem;
+    margin: 2rem 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .subtitle { color: var(--muted); font-size: 0.9rem; margin-bottom: 2rem; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+  .stat {
+    text-align: center;
+    padding: 1rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+  .stat .num { font-size: 2.5rem; font-weight: 800; line-height: 1; }
+  .stat .label { color: var(--muted); font-size: 0.85rem; margin-top: 0.25rem; }
+  .green { color: var(--green); }
+  .red { color: var(--red); }
+  .yellow { color: var(--yellow); }
+  .purple { color: var(--purple); }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.75rem 0;
+  }
+  th, td {
+    padding: 0.6rem 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  th { color: var(--muted); font-weight: 600; font-size: 0.85rem; text-transform: uppercase; }
+  td { font-size: 0.9rem; }
+  .badge {
+    display: inline-block;
+    padding: 0.15rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.78rem;
+    font-weight: 600;
+  }
+  .badge-done { background: rgba(63,185,80,0.15); color: var(--green); }
+  .badge-wip { background: rgba(210,153,29,0.15); color: var(--yellow); }
+  .badge-pending { background: rgba(139,148,158,0.15); color: var(--muted); }
+  .commit { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.82rem; }
+  .commit-hash { color: var(--accent); }
+  .commit-msg { color: var(--text); }
+  .commit-time { color: var(--muted); }
+  .checklist { list-style: none; }
+  .checklist li { padding: 0.35rem 0; display: flex; align-items: center; gap: 0.5rem; }
+  .checklist .check { color: var(--green); font-weight: bold; }
+  .checklist .cross { color: var(--red); font-weight: bold; }
+  .mapping-table td:first-child { font-weight: 600; }
+  .arrow { color: var(--muted); margin: 0 0.5rem; }
+  .status-strip {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin: 1rem 0;
+  }
+  .status-chip {
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    font-weight: 600;
+  }
+  .chip-pending { background: rgba(88,166,255,0.15); color: var(--accent); }
+  .chip-running { background: rgba(210,153,29,0.15); color: var(--yellow); }
+  .chip-succeeded { background: rgba(63,185,80,0.15); color: var(--green); }
+  .chip-failed { background: rgba(248,81,73,0.15); color: var(--red); }
+  .chip-retry { background: rgba(188,140,255,0.15); color: var(--purple); }
+  code {
+    background: rgba(110,118,129,0.15);
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+    font-size: 0.85rem;
+  }
+  .test-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; }
+  .test-pass {
+    padding: 0.3rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.78rem;
+    background: rgba(63,185,80,0.08);
+    border-left: 3px solid var(--green);
+  }
+  .warning-box {
+    background: rgba(210,153,29,0.1);
+    border: 1px solid rgba(210,153,29,0.3);
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1rem 0;
+  }
+  .warning-box .title { color: var(--yellow); font-weight: 700; margin-bottom: 0.5rem; }
+  @media (max-width: 600px) {
+    body { padding: 1rem; }
+    .test-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<h1>⚡ XHS-Downloader 视频队列 — 断电恢复完成报告</h1>
+<p class="subtitle">2026 年 6 月 29 日 · 项目路径：<code>my/Projects/小红书下载同步/XHS-Downloader</code></p>
+
+<!-- Stats -->
+<div class="grid">
+  <div class="stat">
+    <div class="num green">3</div>
+    <div class="label">Git 提交已推送</div>
+  </div>
+  <div class="stat">
+    <div class="num green">15/15</div>
+    <div class="label">测试全部通过</div>
+  </div>
+  <div class="stat">
+    <div class="num purple">6/7</div>
+    <div class="label">审计任务完成</div>
+  </div>
+  <div class="stat">
+    <div class="num yellow">1</div>
+    <div class="label">待确认（飞书建表）</div>
+  </div>
+</div>
+
+<!-- Audit Task Status -->
+<h2>📋 审计 7 项任务完成情况</h2>
+<div class="card">
+  <ul class="checklist">
+    <li><span class="check">✅</span> 任务间间隔 <code>VIDEO_DISPATCH_INTERVAL_SECONDS</code> — 已实现</li>
+    <li><span class="check">✅</span> 配置化最大重试 <code>VIDEO_MAX_RETRIES</code> — 已实现</li>
+    <li><span class="check">✅</span> 管理 API（<code>get_video_job_status</code> + <code>retry_video_task</code>）— 已实现</li>
+    <li><span class="check">✅</span> 结构化日志 <code>_log_event</code> — 已实现</li>
+    <li><span class="check">✅</span> 主表汇总字段增强 <code>aggregate_parent_tasks</code> — 已实现</li>
+    <li><span class="check">✅</span> 状态值中→英（PENDING / RUNNING / SUCCEEDED / FAILED / RETRY_WAIT）— 已完成</li>
+    <li><span class="cross">❌</span> 飞书「视频任务队列」表创建 — 需确认 base token</li>
+  </ul>
+</div>
+
+<!-- Status Mappings -->
+<h2>🔤 状态值映射（中文 → 英文）</h2>
+<div class="card">
+  <p style="margin-bottom: 1rem; color: var(--muted);">任务状态（存储在飞书任务表「状态」字段）：</p>
+  <div class="status-strip">
+    <span class="status-chip chip-pending">待处理 → PENDING</span>
+    <span class="status-chip chip-running">处理中 → RUNNING</span>
+    <span class="status-chip chip-succeeded">成功 → SUCCEEDED</span>
+    <span class="status-chip chip-failed">待人工刷新 → FAILED</span>
+    <span class="status-chip chip-retry">待重试 → RETRY_WAIT</span>
+  </div>
+  <p style="color: var(--muted); font-size: 0.85rem; margin-top: 0.75rem;">父记录汇总状态：无视频→NO_VIDEO · 等待处理→AWAITING · 处理中→PROCESSING · 视频完成→VIDEO_COMPLETE · 部分失败→PARTIAL_FAILED</p>
+</div>
+
+<!-- Git Commits -->
+<h2>🔗 Git 提交记录（已推送 GitHub）</h2>
+<div class="card">
+  <table>
+    <tr><th>Hash</th><th>消息</th></tr>
+    <tr>
+      <td><code class="commit-hash">2004b34</code></td>
+      <td><span class="commit-msg">feat(video-queue): structured logging, configurable retry, management APIs</span><br><span class="commit-time">+317/-35 video_worker.py · +1/-1 app.py</span></td>
+    </tr>
+    <tr>
+      <td><code class="commit-hash">15a319f</code></td>
+      <td><span class="commit-msg">refactor(video-queue): change status values from Chinese to English (PENDING/RUNNING/SUCCEEDED/FAILED/RETRY_WAIT)</span><br><span class="commit-time">video_worker.py · test_video_queue.py</span></td>
+    </tr>
+    <tr>
+      <td><code class="commit-hash">5ae9809</code></td>
+      <td><span class="commit-msg">fix(video-queue): disambiguate parent AWAITING from task PENDING</span><br><span class="commit-time">video_worker.py</span></td>
+    </tr>
+    <tr style="opacity: 0.6;">
+      <td><code class="commit-hash">783da7a</code></td>
+      <td><span class="commit-msg">feat(video-queue): add persistent serial video upload worker</span><br><span class="commit-time">（断电前已推送的基础版本）</span></td>
+    </tr>
+  </table>
+</div>
+
+<!-- Test Results -->
+<h2>🧪 测试结果 — 15/15 全部通过</h2>
+<div class="card">
+  <p style="color: var(--green); font-weight: 700; margin-bottom: 0.75rem;">pytest tests/test_video_queue.py -v · 78.70s · 0 failures</p>
+  <div class="test-grid">
+    <div class="test-pass">test_json_array_and_deduplication</div>
+    <div class="test-pass">test_newlines_keep_order</div>
+    <div class="test-pass">test_percent_newline</div>
+    <div class="test-pass">test_refresh_extracts_multiple_origin_videos</div>
+    <div class="test-pass">test_single_url</div>
+    <div class="test-pass">test_concurrent_duplicate_trigger</div>
+    <div class="test-pass">test_duplicate_trigger_creates_nothing_twice</div>
+    <div class="test-pass">test_duplicate_trigger_preserves_completed</div>
+    <div class="test-pass">test_existing_feishu_payload_is_accepted</div>
+    <div class="test-pass">test_single_url_and_old_payload</div>
+    <div class="test-pass">test_three_urls_use_indexes_1_2_3</div>
+    <div class="test-pass">test_tokens_remain_paired_and_sorted</div>
+    <div class="test-pass">test_concurrent_calls_still_process_one</div>
+    <div class="test-pass">test_failure_does_not_block_next_task</div>
+    <div class="test-pass">test_refresh_exception_becomes_manual</div>
+  </div>
+</div>
+
+<!-- Remaining -->
+<h2>⚠️ 待完成 — 飞书建表</h2>
+<div class="warning-box">
+  <div class="title">🔴 需要确认：飞书 Base Token</div>
+  <p style="margin-bottom: 0.75rem;">
+    用 <code>lark-cli base +table-create</code> 创建「视频任务队列」表时，报 <code>NOTEXIST (code 91402)</code>。
+    审计文档中的 base token <code>HDzw…CnHd</code> 无法通过当前 lark-cli 验证。
+  </p>
+  <p style="margin-bottom: 0.5rem;"><strong>需要你提供：</strong></p>
+  <ul style="margin-left: 1.5rem; margin-bottom: 0.75rem;">
+    <li>完整的 <code>FEISHU_BITABLE_APP_TOKEN</code>（素材库多维表格 token）</li>
+    <li>或者让我用另一种方式验证（如飞书 UI 截图中的 base URL）</li>
+  </ul>
+  <p style="color: var(--muted); font-size: 0.85rem;">
+    获取方式：打开飞书多维表格 → URL 中 <code>/base/</code> 后面的字符串即为 app_token
+  </p>
+</div>
+
+<!-- Next Steps -->
+<h2>🚀 建表完成后下一步</h2>
+<div class="card">
+  <table>
+    <tr><td style="width: 2rem;">1.</td><td>在「素材库」Base 中创建「视频任务队列」表（含 12 个字段）</td></tr>
+    <tr><td>2.</td><td>在主表「素材库」中新增 6 个汇总字段（视频总数、成功数、失败数、处理状态、批次 ID、失败摘要）</td></tr>
+    <tr><td>3.</td><td>配置 <code>FEISHU_VIDEO_TASK_TABLE_ID</code> 环境变量</td></tr>
+    <tr><td>4.</td><td>本地启动 <code>python main.py video-worker</code> 验证端到端流程</td></tr>
+    <tr><td>5.</td><td>部署 Render Background Worker</td></tr>
+  </table>
+</div>
+
+<!-- Summary -->
+<h2>📊 项目当前进度总览</h2>
+<div class="card">
+  <table>
+    <tr><td>视频 Worker 基础版</td><td><span class="badge badge-done">已推送</span></td></tr>
+    <tr><td>Worker 增强（日志/重试/管理 API）</td><td><span class="badge badge-done">已推送</span></td></tr>
+    <tr><td>状态值英文化</td><td><span class="badge badge-done">已推送</span></td></tr>
+    <tr><td>单元测试（15 个）</td><td><span class="badge badge-done">全部通过</span></td></tr>
+    <tr><td>飞书任务队列表</td><td><span class="badge badge-wip">待建表</span></td></tr>
+    <tr><td>飞书主表汇总字段</td><td><span class="badge badge-wip">待新增</span></td></tr>
+    <tr><td>端到端验证</td><td><span class="badge badge-pending">待执行</span></td></tr>
+    <tr><td>Render 部署</td><td><span class="badge badge-pending">待部署</span></td></tr>
+  </table>
+</div>
+
+<p style="text-align: center; color: var(--muted); margin-top: 3rem; font-size: 0.85rem;">
+  生成于 2026-06-29 · 代码完整无丢失 · 3 次提交已全部推送 GitHub
+</p>
+
+</body>
+</html>
