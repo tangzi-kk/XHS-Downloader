@@ -29,10 +29,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 COPY --from=builder /install /usr/local
 
-COPY locale /app/locale
 COPY source /app/source
-COPY static/XHS-Downloader.tcss /app/static/XHS-Downloader.tcss
-COPY LICENSE /app/LICENSE
 COPY main.py /app/main.py
 
 EXPOSE 5556

@@ -2,13 +2,12 @@ services:
   # ── Web Service: FastAPI 主接口 ──
   - type: web
     name: xhs-downloader-api
-    runtime: docker
+    env: docker
     repo: https://github.com/tangzi-kk/XHS-Downloader
     plan: free
     region: singapore
     dockerCommand: python main.py api
     numInstances: 1
-    healthCheckPath: /
     envVars:
       - key: FEISHU_APP_ID
         sync: false
@@ -26,7 +25,7 @@ services:
   # ── Background Worker: 视频任务串行处理 ──
   - type: worker
     name: xhs-downloader-video-worker
-    runtime: docker
+    env: docker
     repo: https://github.com/tangzi-kk/XHS-Downloader
     plan: free
     region: singapore

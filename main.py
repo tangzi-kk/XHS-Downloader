@@ -2,6 +2,7 @@ from asyncio import run
 from asyncio.exceptions import CancelledError
 from contextlib import suppress
 from sys import argv
+import os
 
 from source import Settings
 from source import XHS
@@ -16,7 +17,7 @@ async def app():
 
 async def api_server(
     host="0.0.0.0",
-    port=5556,
+    port=int(os.environ.get("PORT", 5556)),
     log_level="info",
 ):
     async with XHS(**Settings().run()) as xhs:
