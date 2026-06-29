@@ -40,16 +40,16 @@ class FakeStore:
     def claim_next_task(self, now_ms):
         candidates = [
             t for t in self.tasks
-            if t["fields"]["状态"] == "待处理"
+            if t["fields"]["状态"] == "PENDING"
             or (
-                t["fields"]["状态"] == "待重试"
+                t["fields"]["状态"] == "RETRY_WAIT"
                 and t["fields"].get("下次重试时间", 0) <= now_ms
             )
         ]
         if not candidates:
             return None
         task = sorted(candidates, key=lambda t: t["fields"]["视频序号"])[0]
-        task["fields"].update({"状态": "处理中", "锁定时间": now_ms})
+        task["fields"].update({"状态": "RUNNING", "锁定时间": now_ms})
         return {"record_id": task["record_id"], "fields": dict(task["fields"])}
 
     def update_task(self, record_id, fields):
@@ -116,10 +116,10 @@ class EnqueueTests(unittest.TestCase):
         url = "https://cdn.example.com/1.mp4"
         enqueue_video_bundle(store, "rec-1", url)
         store.tasks[0]["fields"].update(
-            {"状态": "成功", "视频文件Token": "video-1", "封面文件Token": "cover-1"}
+            {"状态": "SUCCEEDED", "视频文件Token": "video-1", "封面文件Token": "cover-1"}
         )
         enqueue_video_bundle(store, "rec-1", url)
-        self.assertEqual(store.parent_updates[-1][1]["视频处理状态"], "完成")
+        self.assertEqual(store.parent_updates[-1][1]["视频处理状态"], "VIDEO_COMPLETE")
         self.assertEqual(store.parent_updates[-1][1]["视频处理进度"], "1 / 1")
 
     def test_concurrent_duplicate_trigger_is_serialized_in_one_api_process(self):
@@ -151,8 +151,8 @@ class EnqueueTests(unittest.TestCase):
 class AggregateTests(unittest.TestCase):
     def test_tokens_remain_paired_and_sorted(self):
         fields = aggregate_parent_tasks([
-            {"fields": {"视频序号": 2, "状态": "成功", "视频文件Token": "v2", "封面文件Token": "c2"}},
-            {"fields": {"视频序号": 1, "状态": "成功", "视频文件Token": "v1", "封面文件Token": "c1"}},
+            {"fields": {"视频序号": 2, "状态": "SUCCEEDED", "视频文件Token": "v2", "封面文件Token": "c2"}},
+            {"fields": {"视频序号": 1, "状态": "SUCCEEDED", "视频文件Token": "v1", "封面文件Token": "c1"}},
         ])
         self.assertEqual(fields["原视频"], [{"file_token": "v1"}, {"file_token": "v2"}])
         self.assertEqual(fields["视频封面"], [{"file_token": "c1"}, {"file_token": "c2"}])
@@ -188,7 +188,7 @@ class WorkerTests(unittest.IsolatedAsyncioTestCase):
         await worker.run_once()
         await worker.run_once()
         self.assertEqual(seen, [1, 2])
-        self.assertEqual([t["fields"]["状态"] for t in store.tasks], ["待重试", "成功"])
+        self.assertEqual([t["fields"]["状态"] for t in store.tasks], ["RETRY_WAIT", "SUCCEEDED"])
 
     async def test_concurrent_calls_still_process_one_at_a_time(self):
         store = FakeStore()
