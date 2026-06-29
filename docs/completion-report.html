@@ -166,7 +166,7 @@
 <!-- Stats -->
 <div class="grid">
   <div class="stat">
-    <div class="num green">4</div>
+    <div class="num green">7</div>
     <div class="label">Git 提交已推送</div>
   </div>
   <div class="stat">
@@ -180,6 +180,10 @@
   <div class="stat">
     <div class="num green">2/2</div>
     <div class="label">飞书字段已更新</div>
+  </div>
+  <div class="stat">
+    <div class="num purple">已配置</div>
+    <div class="label">Render Blueprint</div>
   </div>
 </div>
 
@@ -275,8 +279,16 @@
       <td><span class="commit-msg">fix(video-queue): disambiguate parent AWAITING from task PENDING</span><br><span class="commit-time">video_worker.py</span></td>
     </tr>
     <tr>
-      <td><code class="commit-hash">aad575b</code></td>
-      <td><span class="commit-msg">docs: add power outage recovery completion report</span><br><span class="commit-time">completion-report.html</span></td>
+      <td><code class="commit-hash">79d13f3</code></td>
+      <td><span class="commit-msg">deploy: add Render Blueprint with API web service and video background worker</span><br><span class="commit-time">render.yaml</span></td>
+    </tr>
+    <tr>
+      <td><code class="commit-hash">7e5692a</code></td>
+      <td><span class="commit-msg">fix(deploy): support Render PORT env var, fix render.yaml schema, remove missing COPY paths</span><br><span class="commit-time">render.yaml · Dockerfile · main.py</span></td>
+    </tr>
+    <tr>
+      <td><code class="commit-hash">d8a8991</code></td>
+      <td><span class="commit-msg">fix(deploy): remove sync:false so Render prompts for FEISHU secrets</span><br><span class="commit-time">render.yaml</span></td>
     </tr>
     <tr style="opacity: 0.6;">
       <td><code class="commit-hash">783da7a</code></td>
@@ -309,6 +321,26 @@
 </div>
 
 <!-- Next Steps -->
+<h2>🚀 Render 部署</h2>
+<div class="success-box">
+  <div class="title">✅ render.yaml 已推送到 GitHub</div>
+  <p style="margin-bottom: 0.75rem;">配置了双服务 Blueprint：</p>
+  <table>
+    <tr><th>服务</th><th>类型</th><th>命令</th><th>实例</th></tr>
+    <tr><td>xhs-downloader-api</td><td>Web Service</td><td><code>python main.py api</code></td><td>1</td></tr>
+    <tr><td>xhs-downloader-video-worker</td><td>Background Worker</td><td><code>python main.py video-worker</code></td><td>1</td></tr>
+  </table>
+</div>
+<div class="warning-box" style="margin-top: 1rem;">
+  <div class="title">⚠️ 部署前需手动操作</div>
+  <ol style="margin-left: 1.5rem;">
+    <li>在 Render Dashboard 中连接 GitHub 仓库 <code>tangzi-kk/XHS-Downloader</code></li>
+    <li>Render 会自动检测 <code>render.yaml</code> 并提示 Blueprint 部署</li>
+    <li>输入 <code>FEISHU_APP_ID</code> 和 <code>FEISHU_APP_SECRET</code></li>
+    <li>批准部署，Render 将自动构建 Docker 镜像并启动两个服务</li>
+  </ol>
+</div>
+
 <h2>🚀 后续步骤</h2>
 <div class="card">
   <table>
