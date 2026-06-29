@@ -30,6 +30,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY --from=builder /install /usr/local
 
 COPY source /app/source
+COPY LICENSE /app/LICENSE
 COPY main.py /app/main.py
 
 EXPOSE 5556

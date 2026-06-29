@@ -2,7 +2,7 @@ services:
   # ── Web Service: FastAPI 主接口 ──
   - type: web
     name: xhs-downloader-api
-    env: docker
+    runtime: docker
     repo: https://github.com/tangzi-kk/XHS-Downloader
     plan: free
     region: singapore
@@ -23,7 +23,7 @@ services:
   # ── Background Worker: 视频任务串行处理 ──
   - type: worker
     name: xhs-downloader-video-worker
-    env: docker
+    runtime: docker
     repo: https://github.com/tangzi-kk/XHS-Downloader
     plan: free
     region: singapore
