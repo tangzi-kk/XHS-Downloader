@@ -56,7 +56,9 @@
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: 8px;
+    transition: transform 0.15s ease;
   }
+  .stat:hover { transform: translateY(-2px); }
   .stat .num { font-size: 2.5rem; font-weight: 800; line-height: 1; }
   .stat .label { color: var(--muted); font-size: 0.85rem; margin-top: 0.25rem; }
   .green { color: var(--green); }
@@ -93,7 +95,6 @@
   .checklist li { padding: 0.35rem 0; display: flex; align-items: center; gap: 0.5rem; }
   .checklist .check { color: var(--green); font-weight: bold; }
   .checklist .cross { color: var(--red); font-weight: bold; }
-  .mapping-table td:first-child { font-weight: 600; }
   .arrow { color: var(--muted); margin: 0 0.5rem; }
   .status-strip {
     display: flex;
@@ -106,12 +107,19 @@
     border-radius: 6px;
     font-size: 0.82rem;
     font-weight: 600;
+    transition: transform 0.15s ease;
   }
+  .status-chip:hover { transform: scale(1.05); }
   .chip-pending { background: rgba(88,166,255,0.15); color: var(--accent); }
   .chip-running { background: rgba(210,153,29,0.15); color: var(--yellow); }
   .chip-succeeded { background: rgba(63,185,80,0.15); color: var(--green); }
   .chip-failed { background: rgba(248,81,73,0.15); color: var(--red); }
   .chip-retry { background: rgba(188,140,255,0.15); color: var(--purple); }
+  .chip-awaiting { background: rgba(255,123,114,0.1); color: #ff7b72; }
+  .chip-processing { background: rgba(210,153,29,0.15); color: var(--yellow); }
+  .chip-video-complete { background: rgba(63,185,80,0.15); color: var(--green); }
+  .chip-partial { background: rgba(248,81,73,0.15); color: var(--red); }
+  .chip-no-video { background: rgba(139,148,158,0.15); color: var(--muted); }
   code {
     background: rgba(110,118,129,0.15);
     padding: 0.1rem 0.35rem;
@@ -125,18 +133,28 @@
     font-size: 0.78rem;
     background: rgba(63,185,80,0.08);
     border-left: 3px solid var(--green);
+    transition: background 0.15s ease;
   }
-  .warning-box {
-    background: rgba(210,153,29,0.1);
-    border: 1px solid rgba(210,153,29,0.3);
+  .test-pass:hover { background: rgba(63,185,80,0.15); }
+  .success-box {
+    background: rgba(63,185,80,0.08);
+    border: 1px solid rgba(63,185,80,0.25);
     border-radius: 8px;
     padding: 1rem;
     margin: 1rem 0;
   }
-  .warning-box .title { color: var(--yellow); font-weight: 700; margin-bottom: 0.5rem; }
+  .success-box .title { color: var(--green); font-weight: 700; margin-bottom: 0.5rem; }
+  .token-card {
+    background: rgba(88,166,255,0.06);
+    border: 1px solid rgba(88,166,255,0.2);
+    border-radius: 8px;
+    padding: 1rem;
+  }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
   @media (max-width: 600px) {
     body { padding: 1rem; }
     .test-grid { grid-template-columns: 1fr; }
+    .two-col { grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -148,7 +166,7 @@
 <!-- Stats -->
 <div class="grid">
   <div class="stat">
-    <div class="num green">3</div>
+    <div class="num green">4</div>
     <div class="label">Git 提交已推送</div>
   </div>
   <div class="stat">
@@ -156,17 +174,17 @@
     <div class="label">测试全部通过</div>
   </div>
   <div class="stat">
-    <div class="num purple">6/7</div>
-    <div class="label">审计任务完成</div>
+    <div class="num green">7/7</div>
+    <div class="label">审计任务全部完成 ✅</div>
   </div>
   <div class="stat">
-    <div class="num yellow">1</div>
-    <div class="label">待确认（飞书建表）</div>
+    <div class="num green">2/2</div>
+    <div class="label">飞书字段已更新</div>
   </div>
 </div>
 
 <!-- Audit Task Status -->
-<h2>📋 审计 7 项任务完成情况</h2>
+<h2>📋 审计 7 项任务 — 全部完成</h2>
 <div class="card">
   <ul class="checklist">
     <li><span class="check">✅</span> 任务间间隔 <code>VIDEO_DISPATCH_INTERVAL_SECONDS</code> — 已实现</li>
@@ -174,27 +192,73 @@
     <li><span class="check">✅</span> 管理 API（<code>get_video_job_status</code> + <code>retry_video_task</code>）— 已实现</li>
     <li><span class="check">✅</span> 结构化日志 <code>_log_event</code> — 已实现</li>
     <li><span class="check">✅</span> 主表汇总字段增强 <code>aggregate_parent_tasks</code> — 已实现</li>
-    <li><span class="check">✅</span> 状态值中→英（PENDING / RUNNING / SUCCEEDED / FAILED / RETRY_WAIT）— 已完成</li>
-    <li><span class="cross">❌</span> 飞书「视频任务队列」表创建 — 需确认 base token</li>
+    <li><span class="check">✅</span> 状态值中→英（PENDING / RUNNING / SUCCEEDED / FAILED / RETRY_WAIT）— 代码 + 飞书均已完成</li>
+    <li><span class="check">✅</span> 飞书「视频任务队列」表 — 已存在，字段选项已更新为英文</li>
   </ul>
 </div>
 
-<!-- Status Mappings -->
-<h2>🔤 状态值映射（中文 → 英文）</h2>
-<div class="card">
-  <p style="margin-bottom: 1rem; color: var(--muted);">任务状态（存储在飞书任务表「状态」字段）：</p>
-  <div class="status-strip">
-    <span class="status-chip chip-pending">待处理 → PENDING</span>
-    <span class="status-chip chip-running">处理中 → RUNNING</span>
-    <span class="status-chip chip-succeeded">成功 → SUCCEEDED</span>
-    <span class="status-chip chip-failed">待人工刷新 → FAILED</span>
-    <span class="status-chip chip-retry">待重试 → RETRY_WAIT</span>
+<!-- Feishu Configuration -->
+<h2>🔗 飞书多维表格配置</h2>
+<div class="token-card">
+  <table>
+    <tr><th>配置项</th><th>值</th><th>环境变量</th></tr>
+    <tr><td>Base URL</td><td colspan="2"><code>https://larkcommunity.feishu.cn/base/HDzwbaKUfa4zuvsxxRDcriWCnHd</code></td></tr>
+    <tr><td>Base Token</td><td><code>HDzwbaKUfa4zuvsxxRDcriWCnHd</code></td><td><code>FEISHU_BITABLE_APP_TOKEN</code></td></tr>
+    <tr><td>主表「素材库」</td><td><code>tblvXlrS9bFSlHa4</code></td><td><code>FEISHU_BITABLE_TABLE_ID</code></td></tr>
+    <tr><td>「视频任务队列」表</td><td><code>tblM5Mm1iGJTC9mx</code></td><td><code>FEISHU_VIDEO_TASK_TABLE_ID</code></td></tr>
+  </table>
+</div>
+
+<h2>🪣 飞书字段更新结果</h2>
+<div class="two-col">
+  <div class="success-box">
+    <div class="title">✅ 视频任务队列 —「状态」字段</div>
+    <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 0.5rem;">表 ID: <code>tblM5Mm1iGJTC9mx</code> · 字段 ID: <code>fldJ9nCbcF</code></p>
+    <div class="status-strip">
+      <span class="status-chip chip-pending">待处理 → PENDING</span>
+      <span class="status-chip chip-running">处理中 → RUNNING</span>
+      <span class="status-chip chip-succeeded">成功 → SUCCEEDED</span>
+      <span class="status-chip chip-failed">待人工刷新 → FAILED</span>
+      <span class="status-chip chip-retry">待重试 → RETRY_WAIT</span>
+    </div>
+    <p style="font-size: 0.78rem; color: var(--muted); margin-top: 0.5rem;">13 个字段已就绪：任务键、父素材记录ID、原始笔记链接、视频序号、视频直链、<strong>状态</strong>、重试次数、下次重试时间、锁定时间、最后错误、视频文件Token、封面文件Token、多行文本</p>
   </div>
-  <p style="color: var(--muted); font-size: 0.85rem; margin-top: 0.75rem;">父记录汇总状态：无视频→NO_VIDEO · 等待处理→AWAITING · 处理中→PROCESSING · 视频完成→VIDEO_COMPLETE · 部分失败→PARTIAL_FAILED</p>
+  <div class="success-box">
+    <div class="title">✅ 素材库主表 —「视频处理状态」字段</div>
+    <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 0.5rem;">表 ID: <code>tblvXlrS9bFSlHa4</code> · 字段 ID: <code>fldFlnCEq2</code></p>
+    <div class="status-strip">
+      <span class="status-chip chip-no-video">无视频 → NO_VIDEO</span>
+      <span class="status-chip chip-awaiting">等待处理 → AWAITING</span>
+      <span class="status-chip chip-processing">处理中 → PROCESSING</span>
+      <span class="status-chip chip-partial">部分失败 → PARTIAL_FAILED</span>
+      <span class="status-chip chip-video-complete">视频完成 → VIDEO_COMPLETE</span>
+    </div>
+    <p style="font-size: 0.78rem; color: var(--muted); margin-top: 0.5rem;">汇总字段已就绪：视频总数、视频成功数、视频失败数、视频处理状态、视频处理进度、视频任务批次ID、视频失败摘要、视频失败详情</p>
+  </div>
+</div>
+
+<!-- Status Mappings -->
+<h2>🔤 完整状态值映射表</h2>
+<div class="card">
+  <table>
+    <tr><th>层级</th><th>中文（旧）</th><th>英文（新）</th><th>颜色</th><th>用途</th></tr>
+    <tr><td rowspan="5" style="vertical-align: top;">任务级<br><span style="color: var(--muted); font-size: 0.78rem;">视频任务队列.状态</span></td>
+      <td>待处理</td><td><span class="status-chip chip-pending">PENDING</span></td><td>蓝</td><td>新任务入队初始状态</td></tr>
+    <tr><td>处理中</td><td><span class="status-chip chip-running">RUNNING</span></td><td>橙</td><td>Worker 领取后</td></tr>
+    <tr><td>成功</td><td><span class="status-chip chip-succeeded">SUCCEEDED</span></td><td>黄</td><td>下载+上传全部完成</td></tr>
+    <tr><td>待人工刷新</td><td><span class="status-chip chip-failed">FAILED</span></td><td>青</td><td>超限重试，需人工介入</td></tr>
+    <tr><td>待重试</td><td><span class="status-chip chip-retry">RETRY_WAIT</span></td><td>浅蓝</td><td>失败后等待指数退避</td></tr>
+    <tr style="border-top: 2px solid var(--border);"><td rowspan="5" style="vertical-align: top;">父记录级<br><span style="color: var(--muted); font-size: 0.78rem;">素材库.视频处理状态</span></td>
+      <td>无视频</td><td><span class="status-chip chip-no-video">NO_VIDEO</span></td><td>蓝</td><td>笔记无视频</td></tr>
+    <tr><td>等待处理</td><td><span class="status-chip chip-awaiting">AWAITING</span></td><td>橙</td><td>任务已入队，等待 Worker</td></tr>
+    <tr><td>处理中</td><td><span class="status-chip chip-processing">PROCESSING</span></td><td>浅蓝</td><td>有任务在 PENDING/RUNNING/RETRY_WAIT</td></tr>
+    <tr><td>部分失败</td><td><span class="status-chip chip-partial">PARTIAL_FAILED</span></td><td>黄</td><td>部分成功部分失败</td></tr>
+    <tr><td>视频完成</td><td><span class="status-chip chip-video-complete">VIDEO_COMPLETE</span></td><td>青</td><td>全部任务成功</td></tr>
+  </table>
 </div>
 
 <!-- Git Commits -->
-<h2>🔗 Git 提交记录（已推送 GitHub）</h2>
+<h2>🔗 Git 提交记录（已全部推送 GitHub）</h2>
 <div class="card">
   <table>
     <tr><th>Hash</th><th>消息</th></tr>
@@ -209,6 +273,10 @@
     <tr>
       <td><code class="commit-hash">5ae9809</code></td>
       <td><span class="commit-msg">fix(video-queue): disambiguate parent AWAITING from task PENDING</span><br><span class="commit-time">video_worker.py</span></td>
+    </tr>
+    <tr>
+      <td><code class="commit-hash">aad575b</code></td>
+      <td><span class="commit-msg">docs: add power outage recovery completion report</span><br><span class="commit-time">completion-report.html</span></td>
     </tr>
     <tr style="opacity: 0.6;">
       <td><code class="commit-hash">783da7a</code></td>
@@ -240,31 +308,13 @@
   </div>
 </div>
 
-<!-- Remaining -->
-<h2>⚠️ 待完成 — 飞书建表</h2>
-<div class="warning-box">
-  <div class="title">🔴 需要确认：飞书 Base Token</div>
-  <p style="margin-bottom: 0.75rem;">
-    用 <code>lark-cli base +table-create</code> 创建「视频任务队列」表时，报 <code>NOTEXIST (code 91402)</code>。
-    审计文档中的 base token <code>HDzw…CnHd</code> 无法通过当前 lark-cli 验证。
-  </p>
-  <p style="margin-bottom: 0.5rem;"><strong>需要你提供：</strong></p>
-  <ul style="margin-left: 1.5rem; margin-bottom: 0.75rem;">
-    <li>完整的 <code>FEISHU_BITABLE_APP_TOKEN</code>（素材库多维表格 token）</li>
-    <li>或者让我用另一种方式验证（如飞书 UI 截图中的 base URL）</li>
-  </ul>
-  <p style="color: var(--muted); font-size: 0.85rem;">
-    获取方式：打开飞书多维表格 → URL 中 <code>/base/</code> 后面的字符串即为 app_token
-  </p>
-</div>
-
 <!-- Next Steps -->
-<h2>🚀 建表完成后下一步</h2>
+<h2>🚀 后续步骤</h2>
 <div class="card">
   <table>
-    <tr><td style="width: 2rem;">1.</td><td>在「素材库」Base 中创建「视频任务队列」表（含 12 个字段）</td></tr>
-    <tr><td>2.</td><td>在主表「素材库」中新增 6 个汇总字段（视频总数、成功数、失败数、处理状态、批次 ID、失败摘要）</td></tr>
-    <tr><td>3.</td><td>配置 <code>FEISHU_VIDEO_TASK_TABLE_ID</code> 环境变量</td></tr>
+    <tr><td style="width: 2rem;">1.</td><td>配置环境变量 <code>FEISHU_BITABLE_APP_TOKEN=HDzwbaKUfa4zuvsxxRDcriWCnHd</code></td></tr>
+    <tr><td>2.</td><td>配置 <code>FEISHU_BITABLE_TABLE_ID=tblvXlrS9bFSlHa4</code></td></tr>
+    <tr><td>3.</td><td>配置 <code>FEISHU_VIDEO_TASK_TABLE_ID=tblM5Mm1iGJTC9mx</code></td></tr>
     <tr><td>4.</td><td>本地启动 <code>python main.py video-worker</code> 验证端到端流程</td></tr>
     <tr><td>5.</td><td>部署 Render Background Worker</td></tr>
   </table>
@@ -276,17 +326,17 @@
   <table>
     <tr><td>视频 Worker 基础版</td><td><span class="badge badge-done">已推送</span></td></tr>
     <tr><td>Worker 增强（日志/重试/管理 API）</td><td><span class="badge badge-done">已推送</span></td></tr>
-    <tr><td>状态值英文化</td><td><span class="badge badge-done">已推送</span></td></tr>
+    <tr><td>状态值英文化（代码）</td><td><span class="badge badge-done">已推送</span></td></tr>
     <tr><td>单元测试（15 个）</td><td><span class="badge badge-done">全部通过</span></td></tr>
-    <tr><td>飞书任务队列表</td><td><span class="badge badge-wip">待建表</span></td></tr>
-    <tr><td>飞书主表汇总字段</td><td><span class="badge badge-wip">待新增</span></td></tr>
+    <tr><td>飞书任务队列表</td><td><span class="badge badge-done">已存在 + 字段已更新</span></td></tr>
+    <tr><td>飞书主表汇总字段</td><td><span class="badge badge-done">已存在 + 选项已更新</span></td></tr>
     <tr><td>端到端验证</td><td><span class="badge badge-pending">待执行</span></td></tr>
     <tr><td>Render 部署</td><td><span class="badge badge-pending">待部署</span></td></tr>
   </table>
 </div>
 
 <p style="text-align: center; color: var(--muted); margin-top: 3rem; font-size: 0.85rem;">
-  生成于 2026-06-29 · 代码完整无丢失 · 3 次提交已全部推送 GitHub
+  生成于 2026-06-29 · 7/7 审计任务全部完成 · 4 次提交已全部推送 GitHub
 </p>
 
 </body>
