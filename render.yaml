@@ -6,7 +6,7 @@ services:
     repo: https://github.com/tangzi-kk/XHS-Downloader
     plan: free
     region: singapore
-    dockerCommand: python main.py api
+    startCommand: python main.py api
     numInstances: 1
     envVars:
       - key: FEISHU_APP_ID
@@ -27,7 +27,7 @@ services:
     repo: https://github.com/tangzi-kk/XHS-Downloader
     plan: free
     region: singapore
-    dockerCommand: python main.py video-worker
+    startCommand: python main.py video-worker
     numInstances: 1
     envVars:
       - key: FEISHU_APP_ID
