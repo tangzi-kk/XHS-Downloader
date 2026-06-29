@@ -66,7 +66,7 @@ from .explore import Explore
 from .image import Image
 from .request import Html
 from .video import Video
-from .video_worker import FeishuVideoTaskStore, enqueue_video_bundle
+from .video_worker import FeishuVideoTaskStore, enqueue_video_bundle, get_video_job_status, retry_video_task
 from rich import print
 
 __all__ = ["XHS"]

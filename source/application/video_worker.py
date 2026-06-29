@@ -6,9 +6,11 @@ import asyncio
 import hashlib
 import inspect
 import json
+import logging
 import mimetypes
 import os
 import re
+import socket
 import subprocess
 import tempfile
 import threading
@@ -20,6 +22,7 @@ from urllib.parse import unquote, urlparse
 
 import requests
 
+logger = logging.getLogger("video_worker")
 
 FEISHU_BASE_URL = "https://open.feishu.cn/open-apis"
 UPLOAD_ALL_LIMIT = 20 * 1024 * 1024
@@ -33,6 +36,72 @@ VIDEO_HEADERS = {
 }
 _ENQUEUE_LOCK = threading.Lock()
 _PROCESS_WORKER_LOCK = asyncio.Lock()
+
+# ── 可配置常量 ──────────────────────────────────────────────
+VIDEO_DISPATCH_INTERVAL_SECONDS = int(
+    os.getenv("VIDEO_DISPATCH_INTERVAL_SECONDS", "15")
+)
+VIDEO_DOWNLOAD_TIMEOUT_SECONDS = int(
+    os.getenv("VIDEO_DOWNLOAD_TIMEOUT_SECONDS", "120")
+)
+VIDEO_UPLOAD_TIMEOUT_SECONDS = int(
+    os.getenv("VIDEO_UPLOAD_TIMEOUT_SECONDS", "180")
+)
+VIDEO_MAX_RETRIES = int(os.getenv("VIDEO_MAX_RETRIES", "8"))
+VIDEO_RETRY_BASE_SECONDS = int(os.getenv("VIDEO_RETRY_BASE_SECONDS", "60"))
+VIDEO_STALE_RUNNING_SECONDS = int(
+    os.getenv("VIDEO_STALE_RUNNING_SECONDS", "900")
+)
+
+
+def _worker_id() -> str:
+    """生成当前 Worker 标识，用于飞书记录排查。"""
+    host = os.getenv("RENDER_INSTANCE_ID") or socket.gethostname() or "unknown"
+    pid = os.getpid()
+    return f"{host[:32]}-{pid}"
+
+
+def _log_event(
+    event: str,
+    note_id: str = "",
+    batch_id: str = "",
+    task_id: str = "",
+    video_index: int = 0,
+    status_before: str = "",
+    status_after: str = "",
+    retry_count: int = 0,
+    error_type: str = "",
+    error_message: str = "",
+    duration_ms: int = 0,
+    **extra: Any,
+) -> None:
+    """结构化日志，不输出完整 token 或密钥。"""
+    payload: dict[str, Any] = {
+        "event": event,
+        "worker_id": _worker_id(),
+    }
+    if note_id:
+        payload["note_id"] = note_id
+    if batch_id:
+        payload["batch_id"] = batch_id
+    if task_id:
+        payload["task_id"] = task_id
+    if video_index:
+        payload["video_index"] = video_index
+    if status_before:
+        payload["status_before"] = status_before
+    if status_after:
+        payload["status_after"] = status_after
+    if retry_count:
+        payload["retry_count"] = retry_count
+    if error_type:
+        payload["error_type"] = error_type
+    if error_message:
+        payload["error_message"] = error_message[:500]
+    if duration_ms:
+        payload["duration_ms"] = duration_ms
+    payload.update(extra)
+    logger.info(json.dumps(payload, ensure_ascii=False, default=str))
 
 
 def parse_real_video_urls(value: Any) -> list[str]:
@@ -103,6 +172,13 @@ def extract_origin_video_urls(namespace: Any) -> list[str]:
     return urls
 
 
+def _make_batch_id(note_id: str) -> str:
+    """生成幂等的批次 ID，基于时间戳和笔记标识。"""
+    ts = int(time.time())
+    short = hashlib.sha256(note_id.encode()).hexdigest()[:8] if note_id else "unknown"
+    return f"batch_{ts}_{short}"
+
+
 def enqueue_video_bundle(
     store: Any,
     record_id: str,
@@ -128,8 +204,9 @@ def _enqueue_video_bundle(
     if any(urlparse(url).scheme not in {"http", "https"} for url in urls):
         raise ValueError("video_url 仅支持 http/https URL")
 
-    existing = store.existing_task_keys(record_id)
     note_url = str(note_url or "").strip()
+    batch_id = _make_batch_id(record_id)
+    existing = store.existing_task_keys(record_id)
     pending = []
     existing_count = 0
     for index, url in enumerate(urls, start=1):
@@ -150,10 +227,21 @@ def _enqueue_video_bundle(
         )
     if pending:
         store.create_tasks(pending)
+        _log_event(
+            "tasks_created",
+            note_id=record_id,
+            batch_id=batch_id,
+            **{"total_count": len(urls), "created_count": len(pending),
+               "existing_count": existing_count},
+        )
     if pending:
         parent_fields = {
             "视频处理状态": "处理中",
             "视频处理进度": f"0 / {len(urls)}",
+            "视频总数": len(urls),
+            "视频成功数": 0,
+            "视频失败数": 0,
+            "视频任务批次ID": batch_id,
         }
     else:
         parent_fields = aggregate_parent_tasks(store.list_parent_tasks(record_id))
@@ -162,6 +250,7 @@ def _enqueue_video_bundle(
         "success": True,
         "status": "queued",
         "record_id": record_id,
+        "batch_id": batch_id,
         "total_count": len(urls),
         "created_count": len(pending),
         "existing_count": existing_count,
@@ -181,25 +270,43 @@ def aggregate_parent_tasks(tasks: list[dict[str, Any]]) -> dict[str, Any]:
         and _field(task, "视频文件Token")
         and _field(task, "封面文件Token")
     ]
+    failed = [
+        task
+        for task in ordered
+        if _field(task, "状态") in {"待人工刷新"}
+    ]
     statuses = [_field(task, "状态") for task in ordered]
-    if any(status in {"待处理", "处理中", "待重试"} for status in statuses):
-        parent_status = "处理中"
-    elif ordered and len(completed) == len(ordered):
-        parent_status = "完成"
-    elif completed and "待人工刷新" in statuses:
-        parent_status = "部分完成"
-    else:
-        parent_status = "视频待处理"
 
-    errors = []
+    total = len(ordered)
+    succeeded = len(completed)
+    failed_count = len(failed)
+
+    if total == 0:
+        parent_status = "无视频"
+    elif any(status in {"待处理", "处理中", "待重试"} for status in statuses):
+        parent_status = "处理中"
+    elif succeeded == total:
+        parent_status = "视频完成"
+    elif failed_count > 0 and succeeded > 0:
+        parent_status = "部分失败"
+    elif succeeded == 0 and failed_count > 0:
+        parent_status = "部分失败"
+    else:
+        parent_status = "等待处理"
+
+    errors: list[str] = []
+    summary_parts: list[str] = []
     for task in ordered:
         status = _field(task, "状态")
-        if status not in {"待重试", "待人工刷新"}:
-            continue
         index = int(_field(task, "视频序号", 0) or 0)
-        error = str(_field(task, "最后错误", "未提供错误详情")).strip()
-        suffix = "已进入待重试" if status == "待重试" else "等待人工刷新"
-        errors.append(f"第 {index} 个视频：{error}；{suffix}")
+        retry = int(_field(task, "重试次数", 0) or 0)
+        if status in {"待重试", "待人工刷新"}:
+            error = str(_field(task, "最后错误", "未提供错误详情")).strip()
+            suffix = "已进入待重试" if status == "待重试" else "等待人工刷新"
+            detail = f"第 {index} 个视频（重试 {retry} 次）：{error}；{suffix}"
+            errors.append(detail)
+            short = str(_field(task, "最后错误", "未知错误")).strip()[:80]
+            summary_parts.append(f"#{index}: {short}")
 
     return {
         "原视频": [
@@ -209,8 +316,12 @@ def aggregate_parent_tasks(tasks: list[dict[str, Any]]) -> dict[str, Any]:
             {"file_token": _field(task, "封面文件Token")} for task in completed
         ],
         "视频处理状态": parent_status,
-        "视频处理进度": f"{len(completed)} / {len(ordered)}",
+        "视频处理进度": f"{succeeded} / {total}",
+        "视频总数": total,
+        "视频成功数": succeeded,
+        "视频失败数": failed_count,
         "视频失败详情": "\n".join(errors),
+        "视频失败摘要": "\n".join(summary_parts),
     }
 
 
@@ -411,35 +522,68 @@ class FeishuVideoTaskStore:
 
 
 class VideoTaskWorker:
-    RETRY_DELAYS = (300, 1200, 3600)
-
     def __init__(
         self,
         store: Any,
         processor: Callable[[dict[str, Any]], Any],
         poll_seconds: int | None = None,
         stale_seconds: int | None = None,
+        dispatch_interval_seconds: int | None = None,
+        max_retries: int | None = None,
+        retry_base_seconds: int | None = None,
     ):
         self.store = store
         self.processor = processor
         self.poll_seconds = poll_seconds or int(os.getenv("VIDEO_TASK_POLL_SECONDS", "10"))
-        self.stale_seconds = stale_seconds or int(os.getenv("VIDEO_TASK_STALE_SECONDS", "900"))
+        self.stale_seconds = stale_seconds or VIDEO_STALE_RUNNING_SECONDS
+        self.dispatch_interval = (
+            dispatch_interval_seconds
+            if dispatch_interval_seconds is not None
+            else VIDEO_DISPATCH_INTERVAL_SECONDS
+        )
+        self.max_retries = max_retries if max_retries is not None else VIDEO_MAX_RETRIES
+        self.retry_base = retry_base_seconds if retry_base_seconds is not None else VIDEO_RETRY_BASE_SECONDS
+        self.worker_id = _worker_id()
         self._lock = _PROCESS_WORKER_LOCK
+
+    def _retry_delay(self, retry_count: int) -> int:
+        """指数退避 + 少量抖动。"""
+        delay = min(self.retry_base * (2 ** (retry_count - 1)), 21600)
+        jitter = int(hashlib.sha256(f"{retry_count}{time.time()}".encode()).hexdigest()[:4], 16) % max(delay // 10, 1)
+        return delay + jitter
 
     async def run_once(self) -> bool:
         async with self._lock:
             now_ms = int(time.time() * 1000)
-            self.store.recover_stale_tasks(now_ms - self.stale_seconds * 1000)
+            recovered = self.store.recover_stale_tasks(
+                now_ms - self.stale_seconds * 1000
+            )
+            if recovered:
+                _log_event("stale_tasks_recovered", **{"recovered_count": recovered})
             task = self.store.claim_next_task(now_ms)
             if not task:
                 return False
             task_id = task["record_id"]
             parent_id = str(_field(task, "父素材记录ID", ""))
+            video_index = int(_field(task, "视频序号", 0) or 0)
+            status_before = str(_field(task, "状态", ""))
+            retry_count_before = int(_field(task, "重试次数", 0) or 0)
+            start_ms = int(time.time() * 1000)
+            _log_event(
+                "task_start",
+                task_id=task_id,
+                note_id=parent_id,
+                video_index=video_index,
+                status_before=status_before,
+                retry_count=retry_count_before,
+                **{"worker_id": self.worker_id},
+            )
             try:
                 result = self.processor(task)
                 if inspect.isawaitable(result):
                     result = await result
                 video_token, cover_token = result
+                duration = int(time.time() * 1000) - start_ms
                 self.store.update_task(
                     task_id,
                     {
@@ -449,38 +593,67 @@ class VideoTaskWorker:
                         "最后错误": "",
                     },
                 )
+                _log_event(
+                    "task_success",
+                    task_id=task_id,
+                    note_id=parent_id,
+                    video_index=video_index,
+                    status_after="成功",
+                    duration_ms=duration,
+                    retry_count=retry_count_before,
+                )
             except Exception as error:
-                retry_count = int(_field(task, "重试次数", 0) or 0) + 1
-                manual_threshold = int(os.getenv("VIDEO_REFRESH_MAX_ATTEMPTS", "4"))
-                manual = bool(getattr(error, "requires_manual_refresh", False)) and retry_count >= manual_threshold
-                delay = self.RETRY_DELAYS[retry_count - 1] if retry_count <= 3 else 21600
-                detail = f"{type(error).__name__}: {error}\n{traceback.format_exc(limit=8)}"[-5000:]
+                duration = int(time.time() * 1000) - start_ms
+                retry_count = retry_count_before + 1
+                manual = bool(
+                    getattr(error, "requires_manual_refresh", False)
+                ) and retry_count >= VIDEO_MAX_RETRIES
+                delay = self._retry_delay(retry_count)
+                detail = (
+                    f"{type(error).__name__}: {error}\n"
+                    f"{traceback.format_exc(limit=8)}"
+                )[-5000:]
+                new_status = "待人工刷新" if manual else "待重试"
                 self.store.update_task(
                     task_id,
                     {
-                        "状态": "待人工刷新" if manual else "待重试",
+                        "状态": new_status,
                         "重试次数": retry_count,
                         "下次重试时间": int((time.time() + delay) * 1000),
                         "最后错误": detail,
                     },
                 )
+                _log_event(
+                    "task_failed",
+                    task_id=task_id,
+                    note_id=parent_id,
+                    video_index=video_index,
+                    status_before=status_before,
+                    status_after=new_status,
+                    retry_count=retry_count,
+                    error_type=type(error).__name__,
+                    error_message=str(error)[:500],
+                    duration_ms=duration,
+                    **{"next_retry_delay_seconds": delay},
+                )
             finally:
                 if parent_id:
                     try:
                         tasks = self.store.list_parent_tasks(parent_id)
-                        self.store.update_parent(parent_id, aggregate_parent_tasks(tasks))
-                    except Exception as aggregate_error:
-                        retry_count = int(_field(task, "重试次数", 0) or 0) + 1
-                        delay = self.RETRY_DELAYS[retry_count - 1] if retry_count <= 3 else 21600
-                        self.store.update_task(
-                            task_id,
-                            {
-                                "状态": "待重试",
-                                "重试次数": retry_count,
-                                "下次重试时间": int((time.time() + delay) * 1000),
-                                "最后错误": f"父素材记录汇总失败：{aggregate_error}"[-5000:],
-                            },
+                        self.store.update_parent(
+                            parent_id,
+                            aggregate_parent_tasks(tasks),
                         )
+                    except Exception as aggregate_error:
+                        _log_event(
+                            "aggregate_failed",
+                            task_id=task_id,
+                            note_id=parent_id,
+                            error_type=type(aggregate_error).__name__,
+                            error_message=str(aggregate_error)[:500],
+                        )
+            # 处理完一个任务后，等待可配置的间隔
+            await asyncio.sleep(self.dispatch_interval)
             return True
 
     async def run_until_idle(self) -> None:
@@ -488,6 +661,7 @@ class VideoTaskWorker:
             pass
 
     async def run_forever(self) -> None:
+        _log_event("worker_start", **{"worker_id": self.worker_id})
         while True:
             try:
                 processed = await self.run_once()
@@ -679,6 +853,112 @@ async def run_video_worker(xhs: Any) -> None:
     await VideoTaskWorker(store, processor).run_forever()
 
 
+def get_video_job_status(
+    store: FeishuVideoTaskStore,
+    parent_record_id: str,
+) -> dict[str, Any]:
+    """查询一条笔记的全部视频任务状态。
+
+    返回每个任务的序号、状态、重试次数、错误原因、最后更新时间，
+    以及汇总的统计信息。
+    """
+    parent_record_id = str(parent_record_id or "").strip()
+    if not parent_record_id:
+        raise ValueError("parent_record_id is required")
+
+    tasks = store.list_parent_tasks(parent_record_id)
+    ordered = sorted(
+        tasks,
+        key=lambda task: int(_field(task, "视频序号", 0) or 0),
+    )
+
+    status_counts: dict[str, int] = {}
+    task_details: list[dict[str, Any]] = []
+    for task in ordered:
+        status = str(_field(task, "状态", "未知"))
+        status_counts[status] = status_counts.get(status, 0) + 1
+        detail = {
+            "task_id": task.get("record_id", ""),
+            "video_index": int(_field(task, "视频序号", 0) or 0),
+            "status": status,
+            "retry_count": int(_field(task, "重试次数", 0) or 0),
+            "error": str(_field(task, "最后错误", "")).strip()[:200] or None,
+            "video_url": str(_field(task, "视频直链", "")).strip() or None,
+            "video_file_token": str(_field(task, "视频文件Token", "")).strip() or None,
+            "cover_file_token": str(_field(task, "封面文件Token", "")).strip() or None,
+            "can_retry": status in {"待重试", "待人工刷新"},
+        }
+        task_details.append(detail)
+
+    total = len(ordered)
+    succeeded = status_counts.get("成功", 0)
+    all_done = total > 0 and succeeded == total
+
+    return {
+        "parent_record_id": parent_record_id,
+        "video_total": total,
+        "status_counts": status_counts,
+        "all_completed": all_done,
+        "tasks": task_details,
+    }
+
+
+def retry_video_task(
+    store: FeishuVideoTaskStore,
+    task_record_id: str,
+) -> dict[str, Any]:
+    """手动重试一个失败或待重试的视频任务。
+
+    仅 FAILED / RETRY_WAIT 状态可重试。
+    重置为 PENDING，保留历史错误和已上传附件。
+    """
+    task_record_id = str(task_record_id or "").strip()
+    if not task_record_id:
+        raise ValueError("task_record_id is required")
+
+    # 查单个任务记录
+    tasks = store._search(
+        [FeishuVideoTaskStore._condition("记录 ID", task_record_id)]
+    )
+    if not tasks:
+        raise ValueError(f"任务不存在：{task_record_id}")
+
+    task = tasks[0]
+    current_status = str(_field(task, "状态", ""))
+
+    if current_status not in {"待重试", "待人工刷新"}:
+        raise ValueError(
+            f"任务状态为「{current_status}」，仅「待重试」或「待人工刷新」可手动重试"
+        )
+
+    parent_id = str(_field(task, "父素材记录ID", ""))
+    _log_event(
+        "task_manual_retry",
+        task_id=task_record_id,
+        note_id=parent_id,
+        status_before=current_status,
+        status_after="待处理",
+    )
+
+    store.update_task(
+        task_record_id,
+        {
+            "状态": "待处理",
+            "下次重试时间": 0,
+            "最后错误": f"（手动重试，原状态：{current_status}）"
+            + str(_field(task, "最后错误", ""))[-4000:],
+        },
+    )
+
+    return {
+        "success": True,
+        "task_id": task_record_id,
+        "parent_record_id": parent_id,
+        "previous_status": current_status,
+        "new_status": "待处理",
+    }
+
+
 __all__ = [
     "FeishuVideoTaskStore",
     "SingleVideoProcessor",
@@ -687,7 +967,9 @@ __all__ = [
     "aggregate_parent_tasks",
     "enqueue_video_bundle",
     "extract_origin_video_urls",
+    "get_video_job_status",
     "make_task_key",
     "parse_real_video_urls",
+    "retry_video_task",
     "run_video_worker",
 ]
