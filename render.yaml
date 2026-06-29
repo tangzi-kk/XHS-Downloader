@@ -1,0 +1,63 @@
+services:
+  # ── Web Service: FastAPI 主接口 ──
+  - type: web
+    name: xhs-downloader-api
+    runtime: docker
+    repo: https://github.com/tangzi-kk/XHS-Downloader
+    plan: free
+    region: singapore
+    dockerCommand: python main.py api
+    numInstances: 1
+    healthCheckPath: /
+    envVars:
+      - key: FEISHU_APP_ID
+        sync: false
+      - key: FEISHU_APP_SECRET
+        sync: false
+      - key: FEISHU_BITABLE_APP_TOKEN
+        value: HDzwbaKUfa4zuvsxxRDcriWCnHd
+      - key: FEISHU_BITABLE_TABLE_ID
+        value: tblvXlrS9bFSlHa4
+      - key: FEISHU_VIDEO_TASK_TABLE_ID
+        value: tblM5Mm1iGJTC9mx
+      - key: PYTHONUNBUFFERED
+        value: "1"
+
+  # ── Background Worker: 视频任务串行处理 ──
+  - type: worker
+    name: xhs-downloader-video-worker
+    runtime: docker
+    repo: https://github.com/tangzi-kk/XHS-Downloader
+    plan: free
+    region: singapore
+    dockerCommand: python main.py video-worker
+    numInstances: 1
+    envVars:
+      - key: FEISHU_APP_ID
+        sync: false
+      - key: FEISHU_APP_SECRET
+        sync: false
+      - key: FEISHU_BITABLE_APP_TOKEN
+        value: HDzwbaKUfa4zuvsxxRDcriWCnHd
+      - key: FEISHU_BITABLE_TABLE_ID
+        value: tblvXlrS9bFSlHa4
+      - key: FEISHU_VIDEO_TASK_TABLE_ID
+        value: tblM5Mm1iGJTC9mx
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: VIDEO_DISPATCH_INTERVAL_SECONDS
+        value: "15"
+      - key: VIDEO_TASK_POLL_SECONDS
+        value: "10"
+      - key: VIDEO_MAX_RETRIES
+        value: "8"
+      - key: VIDEO_RETRY_BASE_SECONDS
+        value: "60"
+      - key: VIDEO_STALE_RUNNING_SECONDS
+        value: "900"
+      - key: VIDEO_DOWNLOAD_TIMEOUT_SECONDS
+        value: "120"
+      - key: VIDEO_UPLOAD_TIMEOUT_SECONDS
+        value: "180"
+      - key: VIDEO_DOWNLOAD_MAX_SECONDS
+        value: "600"
