@@ -292,7 +292,7 @@ def aggregate_parent_tasks(tasks: list[dict[str, Any]]) -> dict[str, Any]:
     elif succeeded == 0 and failed_count > 0:
         parent_status = "PARTIAL_FAILED"
     else:
-        parent_status = "PENDING"
+        parent_status = "AWAITING"
 
     errors: list[str] = []
     summary_parts: list[str] = []
