@@ -10,9 +10,7 @@ services:
     numInstances: 1
     envVars:
       - key: FEISHU_APP_ID
-        sync: false
       - key: FEISHU_APP_SECRET
-        sync: false
       - key: FEISHU_BITABLE_APP_TOKEN
         value: HDzwbaKUfa4zuvsxxRDcriWCnHd
       - key: FEISHU_BITABLE_TABLE_ID
@@ -33,9 +31,7 @@ services:
     numInstances: 1
     envVars:
       - key: FEISHU_APP_ID
-        sync: false
       - key: FEISHU_APP_SECRET
-        sync: false
       - key: FEISHU_BITABLE_APP_TOKEN
         value: HDzwbaKUfa4zuvsxxRDcriWCnHd
       - key: FEISHU_BITABLE_TABLE_ID
