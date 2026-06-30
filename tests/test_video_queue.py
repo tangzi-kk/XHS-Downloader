@@ -15,6 +15,7 @@ from source.application.video_worker import (
     aggregate_parent_tasks,
     enqueue_video_bundle,
     extract_origin_video_urls,
+    normalize_feishu_text,
     parse_real_video_urls,
     retry_video_task,
 )
@@ -80,6 +81,25 @@ class ParseTests(unittest.TestCase):
 
     def test_json_array_and_deduplication(self):
         self.assertEqual(parse_real_video_urls('["url1", "url2", "url1"]'), ["url1", "url2"])
+
+    def test_feishu_text_segments_are_joined_in_order(self):
+        self.assertEqual(
+            normalize_feishu_text(
+                [
+                    {"text": "https://example.com/", "type": "text"},
+                    {"text": "a.mp4", "type": "text"},
+                ]
+            ),
+            "https://example.com/a.mp4",
+        )
+
+    def test_feishu_text_segments_parse_as_url(self):
+        self.assertEqual(
+            parse_real_video_urls(
+                [{"text": "https://example.com/a.mp4", "type": "text"}]
+            ),
+            ["https://example.com/a.mp4"],
+        )
 
     def test_refresh_extracts_multiple_origin_videos_without_backup_urls(self):
         namespace = SimpleNamespace(
@@ -187,6 +207,81 @@ class AggregateTests(unittest.TestCase):
 
 
 class WorkerTests(unittest.IsolatedAsyncioTestCase):
+    async def test_processor_downloads_plain_url_from_feishu_text_field(self):
+        store = FakeStore()
+        captured = []
+
+        class Helpers:
+            @staticmethod
+            def infer_media_content_type(sample, declared_type):
+                return "video/mp4"
+
+            @staticmethod
+            def is_video_media(filename, content_type):
+                return True
+
+        processor = SingleVideoProcessor(store, Helpers())
+
+        def download(url, destination):
+            captured.append(url)
+            destination.write_bytes(b"video-bytes")
+            return "video/mp4", "11"
+
+        processor._download = download
+        processor._cover = lambda video_path, cover_path: cover_path.write_bytes(b"cover")
+        processor._upload = lambda path, filename, content_type: f"token-{filename}"
+
+        await processor(
+            {
+                "record_id": "task-1",
+                "fields": {
+                    "视频直链": [
+                        {"text": "https://example.com/a.mp4", "type": "text"}
+                    ],
+                    "视频序号": 1,
+                },
+            }
+        )
+
+        self.assertEqual(captured, ["https://example.com/a.mp4"])
+
+    async def test_feishu_text_parent_id_is_used_for_parent_update(self):
+        store = FakeStore()
+        enqueue_video_bundle(store, "rec-1", "https://cdn.example.com/1.mp4")
+        store.tasks[0]["fields"]["父素材记录ID"] = [
+            {"text": "rec-1", "type": "text"}
+        ]
+
+        async def process(task):
+            return "v1", "c1"
+
+        worker = VideoTaskWorker(store, process, dispatch_interval_seconds=0)
+        await worker.run_once()
+        self.assertEqual(store.parent_updates[-1][0], "rec-1")
+
+    async def test_feishu_text_note_url_is_used_for_refresh(self):
+        seen = []
+        store = FakeStore()
+
+        async def refresh(note_url):
+            seen.append(note_url)
+            return ["https://example.com/fresh.mp4"]
+
+        processor = SingleVideoProcessor(store, object(), refresh)
+        store.tasks.append({"record_id": "task-1", "fields": {}})
+        task = {
+            "record_id": "task-1",
+            "fields": {
+                "原始笔记链接": [
+                    {"text": "https://www.xiaohongshu.com/explore/1", "type": "text"}
+                ],
+                "视频序号": 1,
+            },
+        }
+
+        self.assertEqual(await processor._refresh(task), "https://example.com/fresh.mp4")
+        self.assertEqual(seen, ["https://www.xiaohongshu.com/explore/1"])
+
     async def test_refresh_exception_becomes_manual_refresh_candidate(self):
         async def broken_refresh(note_url):
             raise RuntimeError("解析服务不可用")

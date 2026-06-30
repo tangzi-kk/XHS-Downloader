@@ -108,7 +108,14 @@ def parse_real_video_urls(value: Any) -> list[str]:
     """解析一篇笔记的真实视频 URL，去重并保持出现顺序。"""
     if value is None:
         return []
-    if isinstance(value, (list, tuple)):
+    if isinstance(value, dict):
+        items = [normalize_feishu_text(value)]
+    elif (
+        isinstance(value, (list, tuple))
+        and all(isinstance(item, dict) and "text" in item for item in value)
+    ):
+        items = [normalize_feishu_text(value)]
+    elif isinstance(value, (list, tuple)):
         items = value
     elif isinstance(value, str):
         text = value.strip()
@@ -137,6 +144,22 @@ def parse_real_video_urls(value: Any) -> list[str]:
                 seen.add(candidate)
                 result.append(candidate)
     return result
+
+
+def normalize_feishu_text(value: Any) -> str:
+    """Return plain text for Feishu text/rich-text field payloads."""
+    if value is None:
+        return ""
+    if isinstance(value, str):
+        return value
+    if isinstance(value, dict):
+        text = value.get("text")
+        if text is not None:
+            return normalize_feishu_text(text)
+        return ""
+    if isinstance(value, (list, tuple)):
+        return "".join(normalize_feishu_text(item) for item in value)
+    return ""
 
 
 def make_task_key(record_id: str, video_index: int, video_url: str) -> str:
@@ -261,6 +284,12 @@ def _field(task: dict[str, Any], name: str, default: Any = None) -> Any:
     return (task.get("fields") or {}).get(name, default)
 
 
+def _text_field(task: dict[str, Any], name: str, default: str = "") -> str:
+    value = (task.get("fields") or {}).get(name, default)
+    text = normalize_feishu_text(value).strip()
+    return text if text else default
+
+
 def aggregate_parent_tasks(tasks: list[dict[str, Any]]) -> dict[str, Any]:
     ordered = sorted(tasks, key=lambda task: int(_field(task, "视频序号", 0) or 0))
     completed = [
@@ -301,11 +330,11 @@ def aggregate_parent_tasks(tasks: list[dict[str, Any]]) -> dict[str, Any]:
         index = int(_field(task, "视频序号", 0) or 0)
         retry = int(_field(task, "重试次数", 0) or 0)
         if status in {"RETRY_WAIT", "FAILED"}:
-            error = str(_field(task, "最后错误", "未提供错误详情")).strip()
+            error = _text_field(task, "最后错误", "未提供错误详情")
             suffix = "已进入待重试" if status == "RETRY_WAIT" else "已标记为失败"
             detail = f"第 {index} 个视频（重试 {retry} 次）：{error}；{suffix}"
             errors.append(detail)
-            short = str(_field(task, "最后错误", "未知错误")).strip()[:80]
+            short = _text_field(task, "最后错误", "未知错误")[:80]
             summary_parts.append(f"#{index}: {short}")
 
     return {
@@ -586,7 +615,7 @@ class VideoTaskWorker:
             if not task:
                 return False
             task_id = task["record_id"]
-            parent_id = str(_field(task, "父素材记录ID", ""))
+            parent_id = _text_field(task, "父素材记录ID")
             video_index = int(_field(task, "视频序号", 0) or 0)
             status_before = str(_field(task, "状态", ""))
             retry_count_before = int(_field(task, "重试次数", 0) or 0)
@@ -715,7 +744,7 @@ class SingleVideoProcessor:
         self.refresh_video_urls = refresh_video_urls
 
     async def _refresh(self, task: dict[str, Any]) -> str:
-        note_url = str(_field(task, "原始笔记链接", "")).strip()
+        note_url = _text_field(task, "原始笔记链接")
         if not note_url or not self.refresh_video_urls:
             raise StaleVideoUrlError("视频直链返回 401/403，且没有可用的原始笔记链接")
         try:
@@ -843,7 +872,7 @@ class SingleVideoProcessor:
         existing_cover_token = str(_field(task, "封面文件Token", "")).strip()
         if existing_video_token and existing_cover_token:
             return existing_video_token, existing_cover_token
-        url = str(_field(task, "视频直链", "")).strip()
+        url = _text_field(task, "视频直链")
         index = int(_field(task, "视频序号", 0) or 0)
         if not url:
             raise RuntimeError("任务没有视频直链")
@@ -913,8 +942,8 @@ def get_video_job_status(
             "video_index": int(_field(task, "视频序号", 0) or 0),
             "status": status,
             "retry_count": int(_field(task, "重试次数", 0) or 0),
-            "error": str(_field(task, "最后错误", "")).strip()[:200] or None,
-            "video_url": str(_field(task, "视频直链", "")).strip() or None,
+            "error": _text_field(task, "最后错误")[:200] or None,
+            "video_url": _text_field(task, "视频直链") or None,
             "video_file_token": str(_field(task, "视频文件Token", "")).strip() or None,
             "cover_file_token": str(_field(task, "封面文件Token", "")).strip() or None,
             "can_retry": status in {"RETRY_WAIT", "FAILED"},
@@ -959,7 +988,7 @@ def retry_video_task(
             f"任务状态为「{current_status}」，仅「RETRY_WAIT」或「FAILED」可手动重试"
         )
 
-    parent_id = str(_field(task, "父素材记录ID", ""))
+    parent_id = _text_field(task, "父素材记录ID")
     _log_event(
         "task_manual_retry",
         task_id=task_record_id,
@@ -997,6 +1026,7 @@ __all__ = [
     "extract_origin_video_urls",
     "get_video_job_status",
     "make_task_key",
+    "normalize_feishu_text",
     "parse_real_video_urls",
     "retry_video_task",
     "run_video_worker",
