@@ -676,9 +676,20 @@ class VideoTaskWorker:
             await asyncio.sleep(self.dispatch_interval)
             return True
 
-    async def run_until_idle(self) -> None:
-        while await self.run_once():
-            pass
+    async def run_until_idle(self, max_tasks: int | None = None) -> int:
+        if max_tasks is None:
+            try:
+                max_tasks = int(os.getenv("VIDEO_WORKER_MAX_TASKS", "24"))
+            except ValueError:
+                max_tasks = 24
+        max_tasks = max(1, int(max_tasks))
+
+        processed = 0
+        while processed < max_tasks:
+            if not await self.run_once():
+                break
+            processed += 1
+        return processed
 
     async def run_forever(self) -> None:
         _log_event("worker_start", **{"worker_id": self.worker_id})

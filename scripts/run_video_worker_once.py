@@ -1,8 +1,9 @@
-"""GitHub Actions 用：每次只串行处理 1 个飞书视频任务后退出。"""
+"""GitHub Actions 用：Mac mini 失联时串行批量处理飞书视频任务。"""
 
 from __future__ import annotations
 
 import asyncio
+import os
 import sys
 from pathlib import Path
 
@@ -18,9 +19,48 @@ from source.application.video_worker import (
     extract_origin_video_urls,
     parse_real_video_urls,
 )
+from source.application.worker_control import GitHubWorkerControl, WorkerControlError
+
+
+def parse_max_tasks(value: str | None) -> int:
+    try:
+        parsed = int(str(value or "").strip())
+    except ValueError:
+        return 24
+    if parsed < 1 or parsed > 24:
+        return 24
+    return parsed
 
 
 async def main() -> None:
+    max_tasks = parse_max_tasks(os.getenv("VIDEO_WORKER_MAX_TASKS"))
+    heartbeat_skipped = False
+    fallback_acquired = False
+    owner = os.getenv("GITHUB_RUN_ID") or "github-actions"
+
+    try:
+        control = GitHubWorkerControl.from_env(owner=owner)
+        decision = control.acquire_fallback_if_needed(
+            heartbeat_max_age_seconds=int(
+                os.getenv("VIDEO_WORKER_HEARTBEAT_MAX_AGE_SECONDS", "600")
+            ),
+            lock_ttl_seconds=int(
+                os.getenv("VIDEO_WORKER_FALLBACK_LOCK_TTL_SECONDS", "900")
+            ),
+        )
+        heartbeat_skipped = decision.heartbeat_fresh
+        fallback_acquired = decision.lock_acquired
+        if not decision.should_run:
+            print(f"Mac mini 心跳正常跳过: {heartbeat_skipped}")
+            print("本轮实际处理视频数: 0")
+            print(f"本轮拿到 GitHub 兜底执行权: {fallback_acquired}")
+            print(f"跳过原因: {decision.reason}")
+            return
+    except WorkerControlError as error:
+        print(f"GitHub 兜底控制面不可用，停止执行: {error}")
+        raise SystemExit(2) from error
+
+    print(f"VIDEO_WORKER_MAX_TASKS={max_tasks}，本轮最多顺序处理 {max_tasks} 条。")
     async with XHS(**Settings().run()) as xhs:
         store = FeishuVideoTaskStore(
             token_provider=xhs.get_tenant_access_token
@@ -55,13 +95,11 @@ async def main() -> None:
 
         worker = VideoTaskWorker(store, processor)
 
-        # 关键：只领取并处理 1 条任务，然后退出。
-        processed = await worker.run_once()
+        processed = await worker.run_until_idle(max_tasks=max_tasks)
 
-        if processed:
-            print("本轮已处理 1 条视频任务，正常退出。")
-        else:
-            print("当前没有待处理视频任务，正常退出。")
+        print(f"Mac mini 心跳正常跳过: {heartbeat_skipped}")
+        print(f"本轮实际处理视频数: {processed}")
+        print(f"本轮拿到 GitHub 兜底执行权: {fallback_acquired}")
 
 
 if __name__ == "__main__":

@@ -18,6 +18,7 @@ from source.application.video_worker import (
     parse_real_video_urls,
     retry_video_task,
 )
+from scripts.run_video_worker_once import parse_max_tasks
 
 
 class FakeStore:
@@ -265,6 +266,56 @@ class WorkerTests(unittest.IsolatedAsyncioTestCase):
         await worker.run_once()
         self.assertEqual(store.tasks[0]["fields"]["状态"], "FAILED")
         self.assertEqual(store.tasks[0]["fields"]["重试次数"], 3)
+
+    async def test_run_until_idle_respects_max_tasks(self):
+        store = FakeStore()
+        enqueue_video_bundle(
+            store,
+            "rec-1",
+            "https://cdn.example.com/1.mp4\nhttps://cdn.example.com/2.mp4\nhttps://cdn.example.com/3.mp4",
+        )
+
+        async def process(task):
+            index = task["fields"]["视频序号"]
+            return f"v{index}", f"c{index}"
+
+        worker = VideoTaskWorker(store, process, dispatch_interval_seconds=0)
+        processed = await worker.run_until_idle(max_tasks=2)
+        self.assertEqual(processed, 2)
+        self.assertEqual(
+            [t["fields"]["状态"] for t in store.tasks],
+            ["SUCCEEDED", "SUCCEEDED", "PENDING"],
+        )
+
+    async def test_run_until_idle_continues_after_failure(self):
+        store = FakeStore()
+        enqueue_video_bundle(
+            store,
+            "rec-1",
+            "https://cdn.example.com/1.mp4\nhttps://cdn.example.com/2.mp4",
+        )
+        seen = []
+
+        async def process(task):
+            index = task["fields"]["视频序号"]
+            seen.append(index)
+            if index == 1:
+                raise RuntimeError("失败")
+            return "v2", "c2"
+
+        worker = VideoTaskWorker(store, process, dispatch_interval_seconds=0)
+        processed = await worker.run_until_idle(max_tasks=2)
+        self.assertEqual(processed, 2)
+        self.assertEqual(seen, [1, 2])
+        self.assertEqual([t["fields"]["状态"] for t in store.tasks], ["RETRY_WAIT", "SUCCEEDED"])
+
+    def test_parse_max_tasks_defaults_to_24_for_invalid_values(self):
+        self.assertEqual(parse_max_tasks(None), 24)
+        self.assertEqual(parse_max_tasks(""), 24)
+        self.assertEqual(parse_max_tasks("abc"), 24)
+        self.assertEqual(parse_max_tasks("0"), 24)
+        self.assertEqual(parse_max_tasks("25"), 24)
+        self.assertEqual(parse_max_tasks("12"), 12)
 
 
 class RetryVideoTaskTests(unittest.TestCase):

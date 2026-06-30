@@ -2,9 +2,9 @@
 
 ## 架构
 
-飞书自动化调用 `POST /feishu_upload_video_bundle` 后，API 只拆分视频链接、写入任务表并返回 `queued`。独立 Worker 使用 `python main.py video-worker` 串行处理任务：下载一个视频、生成封面、上传附件、立即汇总父素材记录，然后再领取下一条。
+飞书自动化调用 `POST /feishu_upload_video_bundle` 后，API 只拆分视频链接、写入任务表并返回 `queued`。Mac mini 常驻 Worker 串行处理任务：下载一个视频、生成封面、上传附件、立即汇总父素材记录，然后再领取下一条。GitHub Actions 每 5 分钟检查 Mac mini 心跳；超过 10 分钟没有心跳时，才兜底批量顺序处理最多 24 条。
 
-第一版必须把 Web Service 和 Background Worker 都固定为 **1 个实例**，并关闭自动横向扩容。API 进程会串行执行幂等查询与建任务，Worker 进程也有全局互斥锁，任何时刻最多处理一个视频。飞书多维表格不提供唯一键约束或原子抢锁，因此部署多个 API/Worker 实例会破坏严格幂等或全局单并发，此部署限制属于生产正确性要求。
+Render Web Service 只保留 API 入队能力，不承担视频下载，不新增 Render Background Worker。API 进程会串行执行幂等查询与建任务，Worker 进程也有全局互斥锁，任何时刻最多处理一个视频。飞书多维表格不提供唯一键约束或原子抢锁，因此部署多个主 Worker 会破坏严格幂等或全局单并发，此部署限制属于生产正确性要求。
 
 ## 新建「视频任务队列」表
 
@@ -72,13 +72,13 @@
 python main.py api
 ```
 
-新增一个 Render Background Worker，使用同一仓库、同一套环境变量，实例数固定为 1，启动命令：
+不要新增 Render Background Worker。Render 不下载视频，不运行：
 
 ```bash
 python main.py video-worker
 ```
 
-两个服务都必须配置：
+Mac mini Worker 和 GitHub Actions 兜底 Worker 都必须配置：
 
 ```text
 FEISHU_APP_ID
@@ -95,6 +95,9 @@ VIDEO_TASK_POLL_SECONDS=10
 VIDEO_TASK_STALE_SECONDS=900
 MAX_VIDEO_UPLOAD_BYTES=
 VIDEO_DOWNLOAD_MAX_SECONDS=600
+VIDEO_DISPATCH_INTERVAL_SECONDS=0
+VIDEO_WORKER_MAX_TASKS=24
+VIDEO_WORKER_HEARTBEAT_MAX_AGE_SECONDS=600
 ```
 
 `MAX_VIDEO_UPLOAD_BYTES` 留空或 `0` 表示不设置额外运维上限。超过飞书单请求 20MB 的视频会自动使用官方分片上传；若设置了此变量，超限任务会保留并进入可见失败/重试状态，不会静默丢弃。Dockerfile 无需修改，继续使用其中的 ffmpeg。

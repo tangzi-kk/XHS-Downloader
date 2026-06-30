@@ -4,6 +4,8 @@
 
 本项目基于 [JoeanAmier/XHS-Downloader](https://github.com/JoeanAmier/XHS-Downloader) 二次开发，保留原项目的小红书作品解析与下载能力，并增加飞书图片上传、视频任务队列、失败重试和附件回写能力。
 
+飞书视频任务队列由 Mac mini 常驻 Worker 作为主力顺序处理；GitHub Actions 每 5 分钟检查一次心跳，Mac mini 超过 10 分钟没有心跳时才兜底批量处理。Render 只负责 `/feishu_upload_video_bundle` 入队，不承担视频下载。部署说明见 [docs/mac-video-worker.md](docs/mac-video-worker.md) 和 [docs/video-queue-setup.md](docs/video-queue-setup.md)。
+
 ## 主要能力
 
 - 解析小红书作品信息和媒体下载地址。
