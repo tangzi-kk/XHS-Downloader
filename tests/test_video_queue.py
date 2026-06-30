@@ -186,6 +186,21 @@ class AggregateTests(unittest.TestCase):
         self.assertEqual(fields["视频封面"], [{"file_token": "c1"}, {"file_token": "c2"}])
         self.assertEqual(fields["视频处理进度"], "2 / 2")
 
+    def test_feishu_text_tokens_are_normalized_for_parent_attachments(self):
+        fields = aggregate_parent_tasks([
+            {
+                "fields": {
+                    "视频序号": 1,
+                    "状态": "SUCCEEDED",
+                    "视频文件Token": [{"text": "v1", "type": "text"}],
+                    "封面文件Token": [{"text": "c1", "type": "text"}],
+                }
+            }
+        ])
+        self.assertEqual(fields["原视频"], [{"file_token": "v1"}])
+        self.assertEqual(fields["视频封面"], [{"file_token": "c1"}])
+        self.assertEqual(fields["视频处理进度"], "1 / 1")
+
     def test_new_enqueue_parent_is_awaiting_not_processing(self):
         store = FakeStore()
         enqueue_video_bundle(store, "rec-1", "https://cdn.example.com/1.mp4")

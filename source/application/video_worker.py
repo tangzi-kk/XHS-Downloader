@@ -296,8 +296,8 @@ def aggregate_parent_tasks(tasks: list[dict[str, Any]]) -> dict[str, Any]:
         task
         for task in ordered
         if _field(task, "状态") == "SUCCEEDED"
-        and _field(task, "视频文件Token")
-        and _field(task, "封面文件Token")
+        and _text_field(task, "视频文件Token")
+        and _text_field(task, "封面文件Token")
     ]
     failed = [
         task
@@ -339,10 +339,12 @@ def aggregate_parent_tasks(tasks: list[dict[str, Any]]) -> dict[str, Any]:
 
     return {
         "原视频": [
-            {"file_token": _field(task, "视频文件Token")} for task in completed
+            {"file_token": _text_field(task, "视频文件Token")}
+            for task in completed
         ],
         "视频封面": [
-            {"file_token": _field(task, "封面文件Token")} for task in completed
+            {"file_token": _text_field(task, "封面文件Token")}
+            for task in completed
         ],
         "视频处理状态": parent_status,
         "视频处理进度": f"{succeeded} / {total}",
