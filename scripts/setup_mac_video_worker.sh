@@ -14,12 +14,30 @@ fi
 
 mkdir -p "${LOG_DIR}" "$(dirname "${PLIST}")"
 
-if [[ ! -x "${VENV_DIR}/bin/python" ]]; then
-  python3 -m venv "${VENV_DIR}"
+PYTHON_BIN="${PYTHON_BIN:-}"
+if [[ -z "${PYTHON_BIN}" ]]; then
+  for candidate in /usr/local/bin/python3.13 /opt/homebrew/bin/python3 python3; do
+    if command -v "${candidate}" >/dev/null 2>&1; then
+      PYTHON_BIN="${candidate}"
+      break
+    fi
+  done
 fi
 
-"${VENV_DIR}/bin/python" -m pip install --upgrade pip
-"${VENV_DIR}/bin/python" -m pip install -r "${PROJECT_DIR}/requirements.txt" curl-cffi
+"${PYTHON_BIN}" - <<'PYVERIFY'
+import sys
+if sys.version_info < (3, 12):
+    raise SystemExit(f"Python 3.12+ required, got {sys.version.split()[0]}")
+PYVERIFY
+
+if [[ ! -x "${VENV_DIR}/bin/python" ]]; then
+  "${PYTHON_BIN}" -m venv "${VENV_DIR}"
+fi
+
+PIP_INDEX_URL="${PIP_INDEX_URL:-http://mirrors.ustc.edu.cn/pypi/simple}"
+PIP_TRUSTED_HOST="${PIP_TRUSTED_HOST:-mirrors.ustc.edu.cn}"
+"${VENV_DIR}/bin/python" -m pip install --index-url "${PIP_INDEX_URL}" --trusted-host "${PIP_TRUSTED_HOST}" --upgrade pip
+"${VENV_DIR}/bin/python" -m pip install --index-url "${PIP_INDEX_URL}" --trusted-host "${PIP_TRUSTED_HOST}" -r "${PROJECT_DIR}/requirements.txt" curl-cffi
 
 cat > "${PLIST}" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
