@@ -1,0 +1,2557 @@
+{
+  "base_token_prefix": "HDzw...CnHd",
+  "audit_time": "2026-07-01T11:27:19.441739",
+  "tables": [
+    {
+      "table_id": "tblXTR9auv2162GT",
+      "table_name": "发布日历",
+      "field_count": 17,
+      "fields": [
+        {
+          "field_id": "fld1QuadNY",
+          "field_name": "备注（禁忌|注意事项）",
+          "type": "select",
+          "options": [
+            "当日宜斋戒、焚香祈福",
+            "忌争吵、说晦气话、杀生",
+            "接财神宜选吉时",
+            "忌空手接福、言行不敬",
+            "宜焚香忏过",
+            "忌妄语、作恶、酗酒",
+            "当日宜斋戒、持诵圣号",
+            "忌不敬、荤腥、妄为",
+            "宜修斋祈福、点灯迎祥",
+            "忌酗酒闹事、口出恶言",
+            "宜守庚申、斋戒、行善",
+            "忌纵欲、作恶、妄语",
+            "宜焚香、斋戒、行善",
+            "忌杀生、恶语",
+            "宜焚香、斋戒、祈福",
+            "忌酗酒、妄语、作恶",
+            "宜持诵圣号、祈福",
+            "忌不敬、荤腥",
+            "宜供奉文昌、祈福求学业",
+            "忌敷衍不敬、口出狂言",
+            "当日宜剃龙头、祭灶神、引钱龙",
+            "忌动针线、扫地、吵架",
+            "忌女子回娘家",
+            "宜斋戒、诵经、行善",
+            "忌不敬、荤腥、杀生",
+            "宜斋戒、行善、放生",
+            "忌杀生、恶语、作恶",
+            "当日宜白天祭祖、踏青、插柳",
+            "忌夜晚外出、穿红戴绿、墓地嬉笑、孕妇幼儿前往、下午3点后扫墓",
+            "宜守庚申、忏悔、行善",
+            "忌纵欲、酗酒、妄语",
+            "宜斋戒、祈福",
+            "宜接财神、补财库",
+            "忌贪小便宜、为富不仁",
+            "宜祈福、行善",
+            "忌不敬、妄语",
+            "忌不敬、荤腥、作恶",
+            "宜斋戒、忏悔、祈福",
+            "忌杀生、作恶、争吵",
+            "宜挂艾草、佩香囊、避五毒",
+            "忌下河游泳（部分地区民俗禁忌）",
+            "宜静养、斋戒",
+            "忌熬夜、耗气、纵欲",
+            "宜供奉关帝",
+            "忌背信弃义、小人行径",
+            "雷斋月宜斋戒、行善、持诵雷经",
+            "忌杀生、妄语、作恶",
+            "宜慎行、少去阴地",
+            "忌半夜出门、酗酒、乱说话",
+            "宜守庚申、忏悔"
+          ],
+          "multiple": true,
+          "link_table": null
+        },
+        {
+          "field_id": "fld1NBbSvg",
+          "field_name": "特殊历法提示",
+          "type": "select",
+          "options": [
+            "丙午马年春节",
+            "火旺年开年运势更关键",
+            "无特殊历法",
+            "神诞日",
+            "祈福功德翻倍",
+            "上元天官赐福日",
+            "全年祈福最佳时机之一",
+            "三尸神上天奏事",
+            "忏悔最佳时机",
+            "丙午年龙抬头",
+            "阳气升发更快",
+            "转运效果更佳",
+            "六十年一遇丙午火马年早清明",
+            "讲究更多",
+            "端午地腊后",
+            "祈福效果延续",
+            "七夕同时是地官考校日",
+            "忏过效果好",
+            "丙午年鬼月",
+            "阳气偏旺",
+            "禁忌更要注意",
+            "重阳同时是斗姥诞辰",
+            "祈福效果翻倍",
+            "冬季祭祖",
+            "注意保暖",
+            "下元解厄",
+            "化解全年不顺的好时机",
+            "祭灶王",
+            "上天言好事的关键日",
+            "岁末收官",
+            "辞旧迎新的最后时机"
+          ],
+          "multiple": true,
+          "link_table": null
+        },
+        {
+          "field_id": "fld46oAV8V",
+          "field_name": "用户搜索热词",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldQv0tV3K",
+          "field_name": "平台适配建议",
+          "type": "select",
+          "options": [
+            "全平台",
+            "抖音做短科普、小红书做图文、公众号做年度运势",
+            "日常更新",
+            "全平台适配",
+            "小红书+公众号",
+            "适合做深度祈福内容",
+            "适合做祈福类内容",
+            "公众号+私域",
+            "做老粉内容",
+            "抖音+小红书",
+            "短科普流量最高",
+            "小红书图文指南流量最高",
+            "抖音+公众号",
+            "做避坑指南",
+            "小红书+抖音",
+            "女性用户多",
+            "避坑指南流量高",
+            "公众号+小红书",
+            "做长辈运势",
+            "公众号+抖音",
+            "做祭祖指南",
+            "公众号",
+            "做解厄内容",
+            "做过年预热",
+            "跨年流量高峰"
+          ],
+          "multiple": true,
+          "link_table": null
+        },
+        {
+          "field_id": "fld5xK9QCP",
+          "field_name": "转化引导提示",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fld5TBCKxo",
+          "field_name": "节日|神诞名称",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fld1LapCES",
+          "field_name": "事件详情",
+          "type": "select",
+          "options": [
+            "天腊之辰（五帝校定生人福寿）、春节、太上老君降现、昊天上帝统天神朝三清",
+            "赵公元帅巡查接财神、孙不二祖师圣诞",
+            "三会日之举迁赏会",
+            "三官大帝考校罪福",
+            "真武下降",
+            "昊天金阙玉皇大帝诞辰",
+            "上元节（上元天官赐福紫微大帝诞辰）、祖天师张道陵圣诞、元宵节",
+            "庚申日（三尸神上天奏事）",
+            "朔日",
+            "月斋日",
+            "南斗下降",
+            "望日",
+            "北斗下降",
+            "勾陈天皇大帝诞辰、长春刘真人诞辰",
+            "文昌梓潼帝君诞辰",
+            "青龙节",
+            "龙角星东升",
+            "万物复苏",
+            "民间剃龙头、引钱龙",
+            "开年纳财转运的关键节点",
+            "太上老君（道德天尊）圣诞",
+            "慈航真人观音大士圣诞",
+            "六十年一遇丙午火马年早清明",
+            "辰月开端",
+            "阴阳交汇地户开",
+            "幽明两界感应通达",
+            "全年祭祖最佳时机",
+            "插柳辟邪、踏青采阳",
+            "玄天上帝真武大帝诞辰",
+            "正一龙虎玄坛赵公明财神圣诞、祖天师张道陵圣诞",
+            "天后妈祖娘娘圣诞",
+            "吕纯阳祖师（吕洞宾）圣诞",
+            "庚申日（三尸神上天奏事）、地腊之辰（五帝校定生人罪福）",
+            "端午节、地腊之辰后祈福延续",
+            "夏至日",
+            "灵宝天尊圣诞",
+            "关帝磨刀日",
+            "雷斋月（六月初一至廿四）核心期",
+            "九天应元雷声普化天尊相关",
+            "鬼月开启",
+            "地官大帝校籍开始",
+            "三会日之庆生中会",
+            "地官大帝考校罪福、七夕节",
+            "中元节（中元二品赦罪地官清虚大帝诞辰）、道德腊之辰",
+            "北斗九皇降世之辰",
+            "九皇斋期",
+            "斗姥元君诞辰、重阳帝君诞辰、玄天上帝飞升、重阳节",
+            "寒衣节",
+            "祭祖送寒衣",
+            "下元节（下元三品解厄水官洞阴大帝诞辰）、民岁腊之辰、三会日之建生大会"
+          ],
+          "multiple": true,
+          "link_table": null
+        },
+        {
+          "field_id": "fld7g3nU2L",
+          "field_name": "内容合规提示",
+          "type": "select",
+          "options": [
+            "避免过度宣传封建迷信",
+            "引导文明过年",
+            "正常发布",
+            "避免违规词汇即可",
+            "避免夸大祈福效果",
+            "用\"运势调整\"替代\"改命\"类词汇",
+            "引导文明祭扫",
+            "避免提及烧纸等违规内容",
+            "避免宣传封建迷信的驱鬼内容",
+            "避免夸大姻缘效果",
+            "避免宣传鬼故事类恐怖内容",
+            "避免夸大延寿效果",
+            "避免夸大解厄效果",
+            "避免迷信宣传",
+            "引导文明跨年"
+          ],
+          "multiple": true,
+          "link_table": null
+        },
+        {
+          "field_id": "fld5OTnCbG",
+          "field_name": "发布最佳时机",
+          "type": "select",
+          "options": [
+            "提前4天",
+            "除夕+初一早高峰发",
+            "当天正常发布即可",
+            "当天上午9点发布",
+            "提前2天",
+            "节前晚高峰发",
+            "当天发布",
+            "提前1天",
+            "当天早8-10点发",
+            "提前3天",
+            "上午8-10点发",
+            "节前发",
+            "鬼月前发",
+            "当天发",
+            "当天下午发"
+          ],
+          "multiple": true,
+          "link_table": null
+        },
+        {
+          "field_id": "fld5Y4SpMe",
+          "field_name": "话题标签建议",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldNYoeoxa",
+          "field_name": "农历日期",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fld75Lvx7z",
+          "field_name": "流量热度指数(1-10)",
+          "type": "number",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fld4pVjyfU",
+          "field_name": "核心节点类型",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fld6FWDCTZ",
+          "field_name": "五行养生提示",
+          "type": "select",
+          "options": [
+            "宜养阳",
+            "多食温补食物",
+            "忌生冷",
+            "顺时养生",
+            "清淡饮食",
+            "斋戒养生",
+            "宜养气",
+            "多食汤圆、萝卜",
+            "忌油腻",
+            "斋戒、静养",
+            "宜养脾",
+            "多食韭菜、豆芽",
+            "忌厚重",
+            "宜养肝",
+            "多食荠菜、香椿",
+            "忌生冷寒食",
+            "宜祛湿",
+            "多食粽子、红豆",
+            "宜养心",
+            "多食莲子、百合",
+            "忌辛辣",
+            "多食冬瓜、薏米",
+            "忌夜食",
+            "宜润肺",
+            "多食菊花、枸杞",
+            "忌燥辣",
+            "宜保暖",
+            "多食羊肉、萝卜",
+            "宜养肾",
+            "多食山药、栗子",
+            "忌寒凉",
+            "宜清肠",
+            "多食灶糖、蔬菜",
+            "宜静养",
+            "多食团圆饭清淡菜",
+            "忌熬夜"
+          ],
+          "multiple": true,
+          "link_table": null
+        },
+        {
+          "field_id": "fld7HYPuJD",
+          "field_name": "自媒体发布选题方向",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fld1VYtNnG",
+          "field_name": "阳历日期",
+          "type": "datetime",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fld7oPAFM5",
+          "field_name": "发布优先级",
+          "type": "select",
+          "options": [
+            "S级",
+            "A级"
+          ],
+          "multiple": false,
+          "link_table": null
+        }
+      ],
+      "view_count": 1,
+      "views": [
+        {
+          "view_id": "vew4HkoVbe",
+          "view_name": "表格",
+          "view_type": "grid"
+        }
+      ],
+      "record_count": -1
+    },
+    {
+      "table_id": "tblO1MRMLeh0sMno",
+      "table_name": "live 图表",
+      "field_count": 1,
+      "fields": [
+        {
+          "field_id": "fldau6M11F",
+          "field_name": "文本",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        }
+      ],
+      "view_count": 1,
+      "views": [
+        {
+          "view_id": "vew7QnLHhI",
+          "view_name": "表格",
+          "view_type": "grid"
+        }
+      ],
+      "record_count": -1
+    },
+    {
+      "table_id": "tblVUzbZUgENdmPe",
+      "table_name": "主题选表",
+      "field_count": 7,
+      "fields": [
+        {
+          "field_id": "fldl4OJ3SZ",
+          "field_name": "热门主题汇总",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldYPU6XeT",
+          "field_name": "SourceID",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldYi0ol4h",
+          "field_name": "热门标签",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "flddTKQlgE",
+          "field_name": "链接 2",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fld1lc2wlH",
+          "field_name": "关键词",
+          "type": "select",
+          "options": [
+            "财运",
+            "运势",
+            "恭喜",
+            "感悟",
+            "爱情",
+            "避谶",
+            "机锋",
+            "事业",
+            "家庭",
+            "图文"
+          ],
+          "multiple": true,
+          "link_table": null
+        },
+        {
+          "field_id": "fld0vJ43ho",
+          "field_name": "日期",
+          "type": "datetime",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fld9dsLpYm",
+          "field_name": "链接1",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        }
+      ],
+      "view_count": 1,
+      "views": [
+        {
+          "view_id": "vewz6j01dQ",
+          "view_name": "热门集（选题）",
+          "view_type": "grid"
+        }
+      ],
+      "record_count": -1
+    },
+    {
+      "table_id": "tblvXlrS9bFSlHa4",
+      "table_name": "素材库",
+      "field_count": 61,
+      "fields": [
+        {
+          "field_id": "fldDyi2wfn",
+          "field_name": "视频任务批次ID",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldXNcUQ6J",
+          "field_name": "分享数",
+          "type": "number",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldAQ9jkYf",
+          "field_name": "适合引流",
+          "type": "checkbox",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldG5HLhEi",
+          "field_name": "素材类型",
+          "type": "select",
+          "options": [
+            "live图",
+            "视频",
+            "图片"
+          ],
+          "multiple": false,
+          "link_table": null
+        },
+        {
+          "field_id": "fldcr3BbRE",
+          "field_name": "视频失败数",
+          "type": "number",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "flduNEnx0c",
+          "field_name": "视频下载错误",
+          "type": "checkbox",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldLQSak82",
+          "field_name": "人工备注",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldFifhv1C",
+          "field_name": "二级分类",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldoKjRONe",
+          "field_name": "原始链接",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldWsmBcxb",
+          "field_name": "视频附件状态",
+          "type": "select",
+          "options": [
+            "待处理",
+            "成功",
+            "外链保留"
+          ],
+          "multiple": false,
+          "link_table": null
+        },
+        {
+          "field_id": "fldahf0ej5",
+          "field_name": "视频失败详情",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldwTLXmKI",
+          "field_name": "采集时间",
+          "type": "created_at",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldqPjWVxE",
+          "field_name": "AI·视觉摘要",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldGHrl9UN",
+          "field_name": "关键词",
+          "type": "select",
+          "options": [],
+          "multiple": true,
+          "link_table": null
+        },
+        {
+          "field_id": "fldf1FgXEd",
+          "field_name": "视频链接",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldFkJJZl9",
+          "field_name": "AI·内容摘要",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldM77YsNM",
+          "field_name": "素材价值",
+          "type": "select",
+          "options": [
+            "S·优先创作",
+            "A·值得留",
+            "B·普通参考",
+            "C·仅备份"
+          ],
+          "multiple": false,
+          "link_table": null
+        },
+        {
+          "field_id": "fldVCAnjXJ",
+          "field_name": "视频封面",
+          "type": "attachment",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fld14mynHl",
+          "field_name": "视频失败摘要",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fld4vyApCH",
+          "field_name": "情绪标签",
+          "type": "select",
+          "options": [
+            "治愈",
+            "焦虑",
+            "共鸣",
+            "震撼",
+            "反差",
+            "高级感",
+            "氛围感",
+            "孤独",
+            "成长",
+            "励志"
+          ],
+          "multiple": true,
+          "link_table": null
+        },
+        {
+          "field_id": "fldv8552uY",
+          "field_name": "平台内容ID",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fld6Rv2fwL",
+          "field_name": "目标人群",
+          "type": "select",
+          "options": [
+            "情感困惑",
+            "事业焦虑",
+            "命理爱好者",
+            "成长自救",
+            "年轻女性",
+            "中老年",
+            "泛人群",
+            "待判断"
+          ],
+          "multiple": true,
+          "link_table": null
+        },
+        {
+          "field_id": "fldFlnCEq2",
+          "field_name": "视频处理状态",
+          "type": "select",
+          "options": [
+            "NO_VIDEO",
+            "AWAITING",
+            "PROCESSING",
+            "PARTIAL_FAILED",
+            "VIDEO_COMPLETE"
+          ],
+          "multiple": false,
+          "link_table": null
+        },
+        {
+          "field_id": "fldyR14qKA",
+          "field_name": "视频成功数",
+          "type": "number",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldFlhS3jx",
+          "field_name": "图片链接",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldNbLy5xB",
+          "field_name": "私域价值",
+          "type": "number",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldutakWyR",
+          "field_name": "表达方式",
+          "type": "select",
+          "options": [
+            "口播",
+            "字幕",
+            "实拍",
+            "混剪",
+            "动图",
+            "图文",
+            "情绪流",
+            "知识讲解",
+            "剧情",
+            "直播切片"
+          ],
+          "multiple": true,
+          "link_table": null
+        },
+        {
+          "field_id": "fldJFltRmh",
+          "field_name": "收藏数",
+          "type": "number",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldZ07N26M",
+          "field_name": "同步状态",
+          "type": "select",
+          "options": [
+            "待处理",
+            "处理中",
+            "已完成",
+            "失败"
+          ],
+          "multiple": false,
+          "link_table": null
+        },
+        {
+          "field_id": "fldvfXHbON",
+          "field_name": "文案拆解",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fld5GwTWzz",
+          "field_name": "使用次数",
+          "type": "number",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldU984j5W",
+          "field_name": "外部发布时间",
+          "type": "datetime",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldyTP4Cwe",
+          "field_name": "原图片",
+          "type": "attachment",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldqRKsTbb",
+          "field_name": "内容形态",
+          "type": "select",
+          "options": [
+            "图文",
+            "单视频",
+            "多视频/动图",
+            "图文+视频",
+            "直播/长视频切片",
+            "纯文本/无媒体",
+            "其他"
+          ],
+          "multiple": false,
+          "link_table": null
+        },
+        {
+          "field_id": "fld37DbgKU",
+          "field_name": "选题方向",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fld7hK31LP",
+          "field_name": "已推送",
+          "type": "checkbox",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldZUKk5LK",
+          "field_name": "作者",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldh44i4X5",
+          "field_name": "平台",
+          "type": "select",
+          "options": [
+            "小红书"
+          ],
+          "multiple": false,
+          "link_table": null
+        },
+        {
+          "field_id": "fldTvXrBC9",
+          "field_name": "失败原因",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldKtLYR3q",
+          "field_name": "创作状态",
+          "type": "select",
+          "options": [
+            "待筛选",
+            "待提炼",
+            "可创作",
+            "创作中",
+            "待发布",
+            "已发布",
+            "归档",
+            "不采用"
+          ],
+          "multiple": false,
+          "link_table": null
+        },
+        {
+          "field_id": "fldCqm8ALu",
+          "field_name": "原视频",
+          "type": "attachment",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fld00OhEg6",
+          "field_name": "作者账号ID",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldkscx927",
+          "field_name": "黄金开头",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldC6Yz0Oy",
+          "field_name": "改写文案",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldYeYCmh2",
+          "field_name": "一级分类",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldBM4lQ6M",
+          "field_name": "场景标签",
+          "type": "select",
+          "options": [],
+          "multiple": true,
+          "link_table": null
+        },
+        {
+          "field_id": "fld0rIEUho",
+          "field_name": "点赞数",
+          "type": "number",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldUTSJf1n",
+          "field_name": "评分",
+          "type": "number",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldRefKU35",
+          "field_name": "标题",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fld7CLz2tr",
+          "field_name": "爆点分析",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldM1YInMs",
+          "field_name": "镜头/ 氛围",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldETUOLdy",
+          "field_name": "视频处理进度",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldlnDbVdH",
+          "field_name": "记录 ID",
+          "type": "formula",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldrEHechV",
+          "field_name": "视频总数",
+          "type": "number",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldQ8mwb1D",
+          "field_name": "关联创作卡",
+          "type": "link",
+          "options": [],
+          "multiple": null,
+          "link_table": "tblspIQDXLimxSEf"
+        },
+        {
+          "field_id": "fldVgddyWc",
+          "field_name": "最后使用时间",
+          "type": "datetime",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldCfEeKDJ",
+          "field_name": "内容描述",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldbtnkTuO",
+          "field_name": "使用风险",
+          "type": "select",
+          "options": [
+            "未评估",
+            "可参考",
+            "需改写",
+            "仅作灵感",
+            "不可直接使用"
+          ],
+          "multiple": false,
+          "link_table": null
+        },
+        {
+          "field_id": "fldIF9A8kM",
+          "field_name": "命理主题",
+          "type": "select",
+          "options": [
+            "事业",
+            "财运",
+            "感情",
+            "婚姻",
+            "贵人",
+            "转运",
+            "风水",
+            "六爻",
+            "八字",
+            "奇门"
+          ],
+          "multiple": false,
+          "link_table": null
+        },
+        {
+          "field_id": "fldbOPdrtQ",
+          "field_name": "评论数",
+          "type": "number",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldKvOQ5KA",
+          "field_name": "状态",
+          "type": "select",
+          "options": [
+            "待处理",
+            "待整理",
+            "待改写",
+            "待发布",
+            "已发布",
+            "废弃"
+          ],
+          "multiple": false,
+          "link_table": null
+        }
+      ],
+      "view_count": 8,
+      "views": [
+        {
+          "view_id": "vewKE2M7zO",
+          "view_name": "导入表",
+          "view_type": "grid"
+        },
+        {
+          "view_id": "vewMhE9bnW",
+          "view_name": "数据表",
+          "view_type": "grid"
+        },
+        {
+          "view_id": "vewbLPlqA1",
+          "view_name": "画册",
+          "view_type": "gallery"
+        },
+        {
+          "view_id": "vewSFOVRS6",
+          "view_name": "00·素材总览",
+          "view_type": "grid"
+        },
+        {
+          "view_id": "vewOStdhzt",
+          "view_name": "10·创作提炼",
+          "view_type": "grid"
+        },
+        {
+          "view_id": "vewoEJzW44",
+          "view_name": "20·视频处理排查",
+          "view_type": "grid"
+        },
+        {
+          "view_id": "vewbh6rM5s",
+          "view_name": "画册·图片素材",
+          "view_type": "gallery"
+        },
+        {
+          "view_id": "vewklZipk3",
+          "view_name": "画册·视频素材",
+          "view_type": "gallery"
+        }
+      ],
+      "record_count": -1
+    },
+    {
+      "table_id": "tblKlnxfdiNwGddE",
+      "table_name": "📚 内容管理系统",
+      "field_count": 17,
+      "fields": [
+        {
+          "field_id": "fldLap7918",
+          "field_name": "三日粉丝增量",
+          "type": "number",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fld3HsKSEy",
+          "field_name": "发布时间",
+          "type": "datetime",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fld7j5I9jg",
+          "field_name": "评论数",
+          "type": "number",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fld3f2u9K4",
+          "field_name": "作品链接",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fld2zIPhls",
+          "field_name": "点赞数",
+          "type": "number",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fld5dOqRo8",
+          "field_name": "作品描述",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldm4q6ldN",
+          "field_name": "#类型",
+          "type": "select",
+          "options": [
+            "干货",
+            "祝福",
+            "案例"
+          ],
+          "multiple": true,
+          "link_table": null
+        },
+        {
+          "field_id": "fldZd8gU6p",
+          "field_name": "成交",
+          "type": "number",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fld6wB5JNQ",
+          "field_name": "分享数",
+          "type": "number",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldLruywsA",
+          "field_name": "作者昵称",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fld3eB563t",
+          "field_name": "时长",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldV1zpE5n",
+          "field_name": "私信",
+          "type": "number",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fld7iPqgVt",
+          "field_name": "标签",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fld2JYhggW",
+          "field_name": "分类",
+          "type": "select",
+          "options": [
+            "人文社科->传统文化->诗词/国学",
+            "个人管理->情感心理->人际情感",
+            "个人管理->情感心理->励志/鸡汤",
+            "人文社科->人文艺术->人文综合",
+            "个人管理->职场技能->人脉技巧",
+            "随拍->录屏->文字录屏",
+            "人文社科->人文艺术->人文综合",
+            "个人管理->情感心理->励志/鸡汤",
+            "人文社科->人文艺术->读书文学",
+            "分类",
+            "个人管理->情感心理->星座",
+            "国学智慧#开悟人生#玄学#清风师兄",
+            "国学智慧#玄学#开悟人生#清风师兄",
+            "传统文化#国学文化#女性智慧#认知",
+            "好运#传统文化#智慧人生#国学文化#girlstalk"
+          ],
+          "multiple": false,
+          "link_table": null
+        },
+        {
+          "field_id": "fldP8KSbYz",
+          "field_name": "账号",
+          "type": "select",
+          "options": [
+            "山乾1️⃣-小宇宙",
+            "清风师兄1️⃣-抖音（大）",
+            "清风师兄 2️⃣-抖音（小）",
+            "清风师兄3️⃣-抖音（日历）",
+            "verydayok1️⃣-小红书",
+            "植觉童年2️⃣-小红书",
+            "清风师兄 1️⃣-快手",
+            "山乾1️⃣-B 站",
+            "山乾1️⃣-可话",
+            "山乾1️⃣-即刻",
+            "山乾1️⃣-微博",
+            "山乾1️⃣-X",
+            "个人管理->情感心理->人际情感",
+            "个人管理->情感心理->励志/鸡汤",
+            "人文社科->传统文化->诗词/国学"
+          ],
+          "multiple": false,
+          "link_table": null
+        },
+        {
+          "field_id": "fldpPJkmTk",
+          "field_name": "拒绝",
+          "type": "number",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fld46QhGJY",
+          "field_name": "收藏数",
+          "type": "number",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        }
+      ],
+      "view_count": 5,
+      "views": [
+        {
+          "view_id": "vewUvzPdKP",
+          "view_name": "每日数据记录",
+          "view_type": "grid"
+        },
+        {
+          "view_id": "vew5dYq5rq",
+          "view_name": "国学数据表",
+          "view_type": "grid"
+        },
+        {
+          "view_id": "vewwljjIDH",
+          "view_name": "热度表",
+          "view_type": "grid"
+        },
+        {
+          "view_id": "vewrp8ptHe",
+          "view_name": "成交表",
+          "view_type": "grid"
+        },
+        {
+          "view_id": "vewojzElJE",
+          "view_name": "截流表",
+          "view_type": "grid"
+        }
+      ],
+      "record_count": -1
+    },
+    {
+      "table_id": "tbls3sbXziV0ZZ8t",
+      "table_name": "素材提取",
+      "field_count": 12,
+      "fields": [
+        {
+          "field_id": "fldAMLW2Sa",
+          "field_name": "动图地址",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldHPUHXl1",
+          "field_name": "八字提取",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldWju9CWT",
+          "field_name": "内容正文",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldYDjdIPB",
+          "field_name": "IP属地",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldSYxAO6j",
+          "field_name": "素材热度星级",
+          "type": "select",
+          "options": [
+            "★☆☆☆☆",
+            "★★☆☆☆",
+            "★★★☆☆",
+            "★★★★☆",
+            "★★★★★"
+          ],
+          "multiple": false,
+          "link_table": null
+        },
+        {
+          "field_id": "fldeFHJAUm",
+          "field_name": "年龄判断",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldVJMSDn5",
+          "field_name": "性别判断",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldU1DmpOF",
+          "field_name": "导入日期",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fld4HbCUU2",
+          "field_name": "配图关键词建议",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "flddmUi9wZ",
+          "field_name": "主题标签",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fld1TwD8rS",
+          "field_name": "素材类型",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fld2dryaf6",
+          "field_name": "角色",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        }
+      ],
+      "view_count": 1,
+      "views": [
+        {
+          "view_id": "vewzcrO7YW",
+          "view_name": "素材提取",
+          "view_type": "grid"
+        }
+      ],
+      "record_count": -1
+    },
+    {
+      "table_id": "tblvhM9gxaMXBN18",
+      "table_name": "AI生成的文案",
+      "field_count": 15,
+      "fields": [
+        {
+          "field_id": "fld8qIlc1A",
+          "field_name": "文本 11",
+          "type": "not_support",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "flduluvrji",
+          "field_name": "豆包 1.6（多模态+深度思考）",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldNQgHcNK",
+          "field_name": "黄历设定日期",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldrMtGSfP",
+          "field_name": "标题金句",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fld6G7dYax",
+          "field_name": "标题",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldrvkGMiM",
+          "field_name": "封面标题",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldzu5TTgd",
+          "field_name": "玄奥总结",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldsfFz6si",
+          "field_name": "文本 11.输出结果",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldYsiza2k",
+          "field_name": "AI 文本生成器",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldLRK4qay",
+          "field_name": "音频链接🔗序号",
+          "type": "number",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldVDOLotn",
+          "field_name": "链接素材",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldRy8n9Zm",
+          "field_name": "链接",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldm4X9XH4",
+          "field_name": "日期",
+          "type": "datetime",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldKzHCCyW",
+          "field_name": "黄历文案制作",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldLLytD9D",
+          "field_name": "提取标签",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        }
+      ],
+      "view_count": 5,
+      "views": [
+        {
+          "view_id": "vewlfWWRAE",
+          "view_name": "标题生成器",
+          "view_type": "grid"
+        },
+        {
+          "view_id": "vew0RD8HMr",
+          "view_name": "文案生成器",
+          "view_type": "grid"
+        },
+        {
+          "view_id": "vewjYDTovu",
+          "view_name": "总表",
+          "view_type": "grid"
+        },
+        {
+          "view_id": "vewKo80UBF",
+          "view_name": "链接素材导入",
+          "view_type": "grid"
+        },
+        {
+          "view_id": "vewRbS4UEZ",
+          "view_name": "黄历",
+          "view_type": "grid"
+        }
+      ],
+      "record_count": -1
+    },
+    {
+      "table_id": "tbl5qJVWWB44BDNa",
+      "table_name": "常用爆款开头（黄金30s）",
+      "field_count": 1,
+      "fields": [
+        {
+          "field_id": "fld5UoMzl9",
+          "field_name": "常用开头",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        }
+      ],
+      "view_count": 1,
+      "views": [
+        {
+          "view_id": "vew6trmrlw",
+          "view_name": "表格",
+          "view_type": "grid"
+        }
+      ],
+      "record_count": -1
+    },
+    {
+      "table_id": "tblVN7X22xkkbzfw",
+      "table_name": "文案库",
+      "field_count": 4,
+      "fields": [
+        {
+          "field_id": "fld03mCY0y",
+          "field_name": "热门存档\u0001",
+          "type": "checkbox",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldE5SXmwT",
+          "field_name": "日期",
+          "type": "datetime",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldvKYlKMT",
+          "field_name": "文案",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "flddTYZPSg",
+          "field_name": "类型",
+          "type": "select",
+          "options": [
+            "引流",
+            "祝福",
+            "干货"
+          ],
+          "multiple": false,
+          "link_table": null
+        }
+      ],
+      "view_count": 1,
+      "views": [
+        {
+          "view_id": "vewIQT4ac4",
+          "view_name": "表格",
+          "view_type": "grid"
+        }
+      ],
+      "record_count": -1
+    },
+    {
+      "table_id": "tblFxKqINn2LbnkY",
+      "table_name": "标题 库",
+      "field_count": 4,
+      "fields": [
+        {
+          "field_id": "fldvKYlKMT",
+          "field_name": "标题",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "flddTYZPSg",
+          "field_name": "类型",
+          "type": "select",
+          "options": [
+            "引流",
+            "祝福",
+            "干货",
+            "哎呀，可把您给盼来啦，有缘人哟！你知道么，坟头之草，若疏稀冷清，家宅福泽难聚，恐困于贫。但倘若有活水流淌着绕坟头三周，便能福禄满满，粮食丰收。取大葫盛装，顺时针洒之。佑护家运昌隆。如此一来，坟头的草便能长得又多又旺，家里也能出有才能的人。快到清明了，若您有时间，不妨去看看坟头草长没长，弄点活水，在坟头撒三周。在清明前后十天都行，早上七点到那儿最为合适。希要是您有啥困惑，欢迎来找清风师兄聊聊。愿您天天都开心，福生无量。",
+            "哎呀，可把您给盼来啦，有缘人哟！春分的时候啊，咱们可千万不能马虎大意。春分前后，养生正当时。此时春气最旺，阴阳趋于平衡，古人认为是调养身体与心情的好时机。养生关键在于平稳，避免阴阳过旺。饮食上，春分三天宜食温和食物，多吃绿色蔬菜，如香椿需焯水后食用。作息要规律，春困明显，应睡子午觉，晚不超十二点，中午适当午休。可常晒后背，每周 2 - 3 次，每次十余分钟。穿衣遵循下厚上薄原则，注重腿脚保暖。情绪方面，要控制情绪，远离烦心事。若熬夜或肝火旺，可在清晨 5 - 7 点，双腿与肩同宽站立，朝东深呼吸 9 次，持续 15 天。顺应自然规律，让身体与季节和谐共处。如有养生困惑，可找清风师兄交流。愿您春分安康，福生无量！\n",
+            "哎呀，可把您给盼来啦，有缘人哟！要是您能在三月二十号十一点之前跟我碰上，那肯定是您要走大运啦！三月二十号左右正好是二十四节气里的春分，这一天白天和晚上一样长，天地间的所有东西都在找那个最好的平衡状态。所以啊，在这能量最平衡的一天，一定要试试立鸡蛋，就算得花耐心让鸡蛋立在桌子上，哪怕鸡蛋有点破了也得把它立住。然后啊，可别忘了说点吉祥话，比如说 “我是有福气的命，我身体好，不愁吃穿，我只有开心没烦恼，我考试肯定能中，我一定能考好，我就是心想事成，就是生活顺心，我就是全家幸福美满、快乐顺利的命”。希望您在春分的时候福气满满，好事不断！要是您有啥困惑，欢迎来找清风师兄聊聊。愿您天天都开心，福生无量。",
+            "哎呀，可把您给盼来啦，有缘人哟！到底咋样才能知道缘分是不是走到头了？要是您老是为了某个人不停地降低自己的底线，而且底线一次次被超过，想放弃又舍不得，到这个时候您可就得小心了，这肯定不是啥好缘分，而是必须得跨过去的感情难关。好的缘分应该是两个人一起向前走的，绝对不会让人精神上受折磨，自己也烦恼。要是精神内耗已经特别严重了，那您就应该想想放下，让花还是花，让树还是树，把别人还给别人，把自己还给自己。希望您幸福美满、事事顺利！要是您有啥困惑，欢迎来找清风师兄聊聊。愿您天天都开心，福生无量。",
+            "告诉你一个玄学的真相，你可一定要记住我这番话呀，人生里头最深报应，那肯定得是婚姻啦。你跟啥样的人碰上了、手拉手走进婚姻的那个地方，经历的日子到底是啥样，其实很准确地反映出你自己得到了啥。碰上合适的人，那就是福气来了；碰到不合适的人，那就是灾难来了。但是呢，刚开始结婚的时候，常常被精心包装得特别喜庆，大家都觉得这是走向幸福的开头。谁能想到，对有的人来说，这是个起点，对另外一些人来说，却是个终点。短的也就一年左右，长的能有个七八年，随着感情慢慢没了、缘分慢慢淡了，好多人慢慢地就明白了，婚姻原来是一种反馈，是需要去还的业报。要是您有啥困惑，欢迎来找清风师兄聊聊。愿您天天都开心，福生无量。",
+            "哎呀，可把您给盼来啦，有缘人哟！爱过的人还能不能做朋友？有的人想着用不一样的关系把感情接着延续下去，也有的人害怕自己变成被低贱利用的对象。我知道你因为爱得太深所以舍不得放下，不管是以啥身份保持联系你都愿意。但是你得想想，如果那个人随随便便跟你聊天，就好像从来没爱过一样，你能受得了这种落差不？别老是靠着朋友的身份去补爱人的位置。要是两个人还有勇气或者舍不得，那就好好在一起；要是注定没缘分，就给曾经的美好时光留点面子。感情深到一定程度不用非得见面，爱到顶了也别纠结。最远的距离不是爱也不是恨，而是变成最熟悉的陌生人。要么一辈子在一起，要么就成陌生人。愿你吉祥、顺利、开心！要是您有啥困惑，欢迎来找清风师兄聊聊。愿您天天都开心，福生无量。"
+          ],
+          "multiple": false,
+          "link_table": null
+        },
+        {
+          "field_id": "fld03mCY0y",
+          "field_name": "热门存档\u0001",
+          "type": "checkbox",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldE5SXmwT",
+          "field_name": "日期",
+          "type": "datetime",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        }
+      ],
+      "view_count": 1,
+      "views": [
+        {
+          "view_id": "vewIQT4ac4",
+          "view_name": "表格",
+          "view_type": "grid"
+        }
+      ],
+      "record_count": -1
+    },
+    {
+      "table_id": "tbl5n936wBnzF3lK",
+      "table_name": "引流",
+      "field_count": 1,
+      "fields": [
+        {
+          "field_id": "fld2b0cqGK",
+          "field_name": "引流",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        }
+      ],
+      "view_count": 1,
+      "views": [
+        {
+          "view_id": "vew7poWVXD",
+          "view_name": "表格",
+          "view_type": "grid"
+        }
+      ],
+      "record_count": -1
+    },
+    {
+      "table_id": "tbllReYNRGuRj85X",
+      "table_name": "祝福",
+      "field_count": 1,
+      "fields": [
+        {
+          "field_id": "fld7hwHHHA",
+          "field_name": "祝福",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        }
+      ],
+      "view_count": 1,
+      "views": [
+        {
+          "view_id": "vew3vcz97A",
+          "view_name": "表格",
+          "view_type": "grid"
+        }
+      ],
+      "record_count": -1
+    },
+    {
+      "table_id": "tblIM0DEaaNQ8kAz",
+      "table_name": "干货",
+      "field_count": 1,
+      "fields": [
+        {
+          "field_id": "fld3IOCtS2",
+          "field_name": "干货",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        }
+      ],
+      "view_count": 1,
+      "views": [
+        {
+          "view_id": "vew2sR8W3c",
+          "view_name": "表格",
+          "view_type": "grid"
+        }
+      ],
+      "record_count": -1
+    },
+    {
+      "table_id": "tblbBcMC9YAjJdXm",
+      "table_name": "单个博主详细数据(链接)",
+      "field_count": 23,
+      "fields": [
+        {
+          "field_id": "fldk3rBnBf",
+          "field_name": "小红书号",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldJV0k0SV",
+          "field_name": "评论内容",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldRHIG4VI",
+          "field_name": "评论回复量",
+          "type": "number",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldZ0isDCy",
+          "field_name": "笔记发布时间",
+          "type": "datetime",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldnBb3vv4",
+          "field_name": "性别",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldAG6cHQy",
+          "field_name": "笔记话题",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldrsE1JPd",
+          "field_name": "评论发布时间",
+          "type": "datetime",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldCdIz2PI",
+          "field_name": "评论发布地点",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldTsbilrt",
+          "field_name": "粉丝",
+          "type": "number",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fld6cgoFVp",
+          "field_name": "IP属地",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldERU9QEN",
+          "field_name": "作者昵称",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldBqxGgtH",
+          "field_name": "主页链接",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldc9CjJGF",
+          "field_name": "笔记链接",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldZaMXXJU",
+          "field_name": "评论人昵称",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldpRilTwa",
+          "field_name": "笔记内容",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldtyNxOTF",
+          "field_name": "评论人主页地址",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fld7Lxqn7D",
+          "field_name": "评论数",
+          "type": "number",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fld2j8KE2B",
+          "field_name": "评论点赞量",
+          "type": "number",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldxMFGXcK",
+          "field_name": "点赞数",
+          "type": "number",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldoF58g9C",
+          "field_name": "关注",
+          "type": "number",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldqEQYXYF",
+          "field_name": "笔记标题",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldBUnY24R",
+          "field_name": "获赞",
+          "type": "number",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldkZsD4pC",
+          "field_name": "收藏数",
+          "type": "number",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        }
+      ],
+      "view_count": 1,
+      "views": [
+        {
+          "view_id": "vewVmfWfgL",
+          "view_name": "默认的表格视图",
+          "view_type": "grid"
+        }
+      ],
+      "record_count": -1
+    },
+    {
+      "table_id": "tblJfaS9h26KILS0",
+      "table_name": "品牌词",
+      "field_count": 19,
+      "fields": [
+        {
+          "field_id": "fldWnLlTla",
+          "field_name": "评论数",
+          "type": "number",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldZzSLmaU",
+          "field_name": "评论内容",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldgYWvJ5G",
+          "field_name": "作者主页地址",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldzwnbvc0",
+          "field_name": "笔记话题",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldC7iWQaB",
+          "field_name": "笔记内容",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldvKlHqdi",
+          "field_name": "评论人主页地址",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldECRegLB",
+          "field_name": "收藏数",
+          "type": "number",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldy5bGzVn",
+          "field_name": "笔记标题",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldbBBbCV6",
+          "field_name": "评论人昵称",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldZdL0fyu",
+          "field_name": "评论发布时间",
+          "type": "datetime",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "flddGWnW8t",
+          "field_name": "品牌词",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldGr5TPN5",
+          "field_name": "评论点赞量",
+          "type": "number",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldV3twfTp",
+          "field_name": "笔记地址",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "flddmElKLJ",
+          "field_name": "点赞数",
+          "type": "number",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldCijav5C",
+          "field_name": "评论回复量",
+          "type": "number",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldMHmv1c4",
+          "field_name": "笔记作者",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldycxy2DL",
+          "field_name": "发布IP",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "flds4xQLTv",
+          "field_name": "评论IP属地",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldLZnqmOD",
+          "field_name": "笔记发布时间",
+          "type": "datetime",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        }
+      ],
+      "view_count": 1,
+      "views": [
+        {
+          "view_id": "vewFNuI2nQ",
+          "view_name": "默认的表格视图",
+          "view_type": "grid"
+        }
+      ],
+      "record_count": -1
+    },
+    {
+      "table_id": "tblUHoat5Etejp0u",
+      "table_name": "文案筛选",
+      "field_count": 3,
+      "fields": [
+        {
+          "field_id": "fldTVfuOYg",
+          "field_name": "自评",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldH2MS7uz",
+          "field_name": "文本",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldTPOueNg",
+          "field_name": "日期",
+          "type": "datetime",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        }
+      ],
+      "view_count": 1,
+      "views": [
+        {
+          "view_id": "veweUlMxnX",
+          "view_name": "表格",
+          "view_type": "grid"
+        }
+      ],
+      "record_count": -1
+    },
+    {
+      "table_id": "tblM5Mm1iGJTC9mx",
+      "table_name": "视频任务队列",
+      "field_count": 13,
+      "fields": [
+        {
+          "field_id": "fldxcGkPHl",
+          "field_name": "原始笔记链接",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldqWruX2j",
+          "field_name": "多行文本",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldqzUUC6V",
+          "field_name": "下次重试时间",
+          "type": "datetime",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldBZvGCPs",
+          "field_name": "父素材记录ID",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldNE218Qk",
+          "field_name": "重试次数",
+          "type": "number",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldyUIO6Ij",
+          "field_name": "视频序号",
+          "type": "number",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldAG0UE64",
+          "field_name": "任务键",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldcEiB7Fv",
+          "field_name": "锁定时间",
+          "type": "datetime",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldDS0j0fg",
+          "field_name": "视频直链",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldDwAdCpO",
+          "field_name": "封面文件Token",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldJ9nCbcF",
+          "field_name": "状态",
+          "type": "select",
+          "options": [
+            "PENDING",
+            "RUNNING",
+            "SUCCEEDED",
+            "FAILED",
+            "RETRY_WAIT"
+          ],
+          "multiple": false,
+          "link_table": null
+        },
+        {
+          "field_id": "fldes9ThNU",
+          "field_name": "最后错误",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldswp1jPY",
+          "field_name": "视频文件Token",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        }
+      ],
+      "view_count": 1,
+      "views": [
+        {
+          "view_id": "vewk5Q9AHl",
+          "view_name": "表格视图 1",
+          "view_type": "grid"
+        }
+      ],
+      "record_count": -1
+    },
+    {
+      "table_id": "tblspIQDXLimxSEf",
+      "table_name": "10·创作卡库",
+      "field_count": 17,
+      "fields": [
+        {
+          "field_id": "fldD964k4e",
+          "field_name": "AI改写文案",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fld1Anyfng",
+          "field_name": "黄金开头",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldoj0pAXF",
+          "field_name": "核心观点",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldbYHWBfn",
+          "field_name": "来源素材",
+          "type": "link",
+          "options": [],
+          "multiple": null,
+          "link_table": "tblvXlrS9bFSlHa4"
+        },
+        {
+          "field_id": "fldwsyosBg",
+          "field_name": "目标受众",
+          "type": "select",
+          "options": [
+            "情感困惑",
+            "事业焦虑",
+            "命理爱好者",
+            "成长自救",
+            "年轻女性",
+            "中老年",
+            "泛人群"
+          ],
+          "multiple": true,
+          "link_table": null
+        },
+        {
+          "field_id": "fldFR12bN2",
+          "field_name": "目标发布平台",
+          "type": "select",
+          "options": [
+            "小红书",
+            "抖音",
+            "视频号",
+            "B站",
+            "微博",
+            "快手",
+            "公众号",
+            "其他"
+          ],
+          "multiple": true,
+          "link_table": null
+        },
+        {
+          "field_id": "fldicwEto4",
+          "field_name": "封面标题",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldOnhzdXz",
+          "field_name": "人工定稿",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldBsub6Ij",
+          "field_name": "选题方向",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fld9ehWQN1",
+          "field_name": "创作卡标题",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldxgrtsEh",
+          "field_name": "发布时间",
+          "type": "datetime",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fld3gHwxup",
+          "field_name": "文案结构",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldjpXftGL",
+          "field_name": "发布链接",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldCZIbhT7",
+          "field_name": "复盘结论",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fldTjEONCZ",
+          "field_name": "画面/分镜建议",
+          "type": "text",
+          "options": [],
+          "multiple": null,
+          "link_table": null
+        },
+        {
+          "field_id": "fld07kGlqh",
+          "field_name": "创作方向",
+          "type": "select",
+          "options": [
+            "小红书图文",
+            "抖音口播",
+            "动图",
+            "混剪",
+            "情绪短句",
+            "命理解读",
+            "直播切片",
+            "选题储备",
+            "其他"
+          ],
+          "multiple": false,
+          "link_table": null
+        },
+        {
+          "field_id": "fldJk8AwK4",
+          "field_name": "制作状态",
+          "type": "select",
+          "options": [
+            "待生成",
+            "待修改",
+            "待制作",
+            "待发布",
+            "已发布",
+            "废弃"
+          ],
+          "multiple": false,
+          "link_table": null
+        }
+      ],
+      "view_count": 4,
+      "views": [
+        {
+          "view_id": "vewe7K0GEn",
+          "view_name": "00·创作看板",
+          "view_type": "kanban"
+        },
+        {
+          "view_id": "vewxrbc2Pa",
+          "view_name": "01·待生成",
+          "view_type": "grid"
+        },
+        {
+          "view_id": "vewkTYxanI",
+          "view_name": "02·待发布",
+          "view_type": "grid"
+        },
+        {
+          "view_id": "vewxR7z8xq",
+          "view_name": "03·已发布",
+          "view_type": "grid"
+        }
+      ],
+      "record_count": -1
+    }
+  ]
+}
