@@ -493,10 +493,13 @@ class XHS:
             skip=0,
         ),
     ):
+        effective_cookie = (
+            cookie.strip() if cookie else ""
+        ) or os.getenv("XHS_COOKIE", "").strip() or None
         id_, namespace = await self._get_html_data(
             url,
             data,
-            cookie,
+            effective_cookie,
             proxy,
             count,
         )
@@ -1119,6 +1122,24 @@ class XHS:
             url = await self.extract_links(
                 extract.url,
             )
+            req_cookie = extract.cookie.strip() if extract.cookie else ""
+            env_cookie = os.getenv("XHS_COOKIE", "").strip()
+
+            if req_cookie:
+                effective_cookie = req_cookie
+                cookie_source = "request"
+            elif env_cookie:
+                effective_cookie = env_cookie
+                cookie_source = "env"
+            else:
+                effective_cookie = None
+                cookie_source = "none"
+
+            cookie_present = bool(effective_cookie)
+            self.logging(
+                f"Cookie Status: cookie_present={cookie_present}, cookie_source={cookie_source}"
+            )
+
             if not url:
                 msg = _("提取小红书作品链接失败")
             else:
@@ -1127,13 +1148,15 @@ class XHS:
                     extract.download,
                     extract.index,
                     not extract.skip,
-                    extract.cookie,
+                    effective_cookie,
                     extract.proxy,
                 ):
                     msg = _("获取小红书作品数据成功")
                 else:
                     msg = _("获取小红书作品数据失败")
-            return ExtractData(message=msg, params=extract, data=data)
+
+            safe_params = extract.model_copy(update={"cookie": None})
+            return ExtractData(message=msg, params=safe_params, data=data)
 
         @server.post("/feishu_upload_v2")
         @server.post("/feishu_upload")

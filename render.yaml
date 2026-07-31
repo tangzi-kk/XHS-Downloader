@@ -9,6 +9,8 @@ services:
     dockerCommand: python main.py api
     numInstances: 1
     envVars:
+      - key: XHS_COOKIE
+        sync: false
       - key: FEISHU_APP_ID
         sync: false
       - key: FEISHU_APP_SECRET
