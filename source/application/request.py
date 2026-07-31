@@ -78,8 +78,16 @@ class Html:
     ) -> dict:
         if not cookie:
             return self.headers.copy()
-        clean_cookie = cookie.encode("latin-1", "ignore").decode("latin-1")
-        return self.headers | {"Cookie": clean_cookie}
+
+        if any(ord(char) < 32 or ord(char) == 127 for char in cookie):
+            raise ValueError("XHS_COOKIE 包含控制字符，请重新从浏览器请求头复制")
+
+        try:
+            cookie.encode("ascii")
+        except UnicodeEncodeError as error:
+            raise ValueError("XHS_COOKIE 包含非 ASCII 字符，请重新获取") from error
+
+        return self.headers | {"Cookie": cookie}
 
     async def __request_url_head(
         self,

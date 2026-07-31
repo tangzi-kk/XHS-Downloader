@@ -55,5 +55,18 @@ class TestCookieSecurity(unittest.TestCase):
         finally:
             os.environ.pop("XHS_COOKIE", None)
 
+    def test_update_cookie_valid_ascii(self):
+        headers = self.xhs.html.update_cookie("web_session=valid_token_123;")
+        self.assertEqual(headers.get("Cookie"), "web_session=valid_token_123;")
+
+    def test_update_cookie_control_char_raises_value_error(self):
+        with self.assertRaises(ValueError) as ctx:
+            self.xhs.html.update_cookie("web_session=bad\r\ntoken;")
+        self.assertIn("包含控制字符", str(ctx.exception))
+
+    def test_update_cookie_non_ascii_raises_value_error(self):
+        with self.assertRaises(ValueError) as ctx:
+            self.xhs.html.update_cookie("web_session=中文token;")
+        self.assertIn("包含非 ASCII 字符", str(ctx.exception))
 if __name__ == "__main__":
     unittest.main()
