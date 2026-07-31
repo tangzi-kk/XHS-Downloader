@@ -76,7 +76,10 @@ class Html:
         self,
         cookie: str = None,
     ) -> dict:
-        return self.headers | {"Cookie": cookie} if cookie else self.headers.copy()
+        if not cookie:
+            return self.headers.copy()
+        clean_cookie = cookie.encode("latin-1", "ignore").decode("latin-1")
+        return self.headers | {"Cookie": clean_cookie}
 
     async def __request_url_head(
         self,
