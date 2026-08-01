@@ -1,11 +1,15 @@
+import asyncio
 import unittest
 import os
 from unittest.mock import AsyncMock, patch
+
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+from httpx import Request, Response
 
 from source.application.app import XHS
 from source.module.settings import Settings
+
 
 class TestCookieSecurity(unittest.TestCase):
     def setUp(self):
@@ -68,5 +72,72 @@ class TestCookieSecurity(unittest.TestCase):
         with self.assertRaises(ValueError) as ctx:
             self.xhs.html.update_cookie("web_session=中文token;")
         self.assertIn("包含非 ASCII 字符", str(ctx.exception))
+
+    @patch("source.application.request.sleep_time", new_callable=AsyncMock)
+    def test_short_link_uses_canonical_url_from_redirect_history(self, mock_sleep):
+        short_url = "https://xhslink.cn/o/test"
+        canonical_url = (
+            "https://www.xiaohongshu.com/discovery/item/1234567890"
+            "?xsec_token=test"
+        )
+        login_url = "https://www.xiaohongshu.com/login"
+
+        short_response = Response(
+            302,
+            headers={"location": canonical_url},
+            request=Request("GET", short_url),
+        )
+        canonical_response = Response(
+            302,
+            headers={"location": login_url},
+            request=Request("GET", canonical_url),
+        )
+        final_response = Response(
+            200,
+            text="login",
+            request=Request("GET", login_url),
+            history=[short_response, canonical_response],
+        )
+
+        with patch.object(
+            self.xhs.html.client,
+            "get",
+            new=AsyncMock(return_value=final_response),
+        ):
+            resolved = asyncio.run(
+                self.xhs.html.request_url(short_url, content=False)
+            )
+
+        self.assertEqual(resolved, canonical_url)
+
+    @patch("source.application.request.sleep_time", new_callable=AsyncMock)
+    def test_non_short_redirect_returns_final_url(self, mock_sleep):
+        source_url = "https://example.com/start"
+        final_url = "https://example.com/final"
+        final_response = Response(
+            200,
+            text="ok",
+            request=Request("GET", final_url),
+            history=[
+                Response(
+                    302,
+                    headers={"location": final_url},
+                    request=Request("GET", source_url),
+                )
+            ],
+        )
+
+        with patch.object(
+            self.xhs.html.client,
+            "get",
+            new=AsyncMock(return_value=final_response),
+        ):
+            resolved = asyncio.run(
+                self.xhs.html.request_url(source_url, content=False)
+            )
+
+        self.assertEqual(resolved, final_url)
+
+
 if __name__ == "__main__":
     unittest.main()
