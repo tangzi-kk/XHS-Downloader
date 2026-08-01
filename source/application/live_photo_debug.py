@@ -31,13 +31,18 @@ _VIDEO_MARKERS = (
 )
 
 
-def _authorize(authorization: str | None) -> None:
-    token = os.getenv("COZE_API_TOKEN", "").strip()
+def _authorize(debug_token: str | None) -> None:
+    token = (
+        os.getenv("XHS_DEBUG_TOKEN", "").strip()
+        or os.getenv("COZE_API_TOKEN", "").strip()
+    )
     if not token:
-        raise HTTPException(status_code=500, detail="Missing COZE_API_TOKEN")
-    expected = f"Bearer {token}"
-    supplied = (authorization or "").strip()
-    if not hmac.compare_digest(supplied, expected):
+        raise HTTPException(
+            status_code=500,
+            detail="Missing XHS_DEBUG_TOKEN or COZE_API_TOKEN",
+        )
+    supplied = (debug_token or "").strip()
+    if not hmac.compare_digest(supplied, token):
         raise HTTPException(status_code=401, detail="Unauthorized")
 
 
@@ -131,9 +136,12 @@ def install_live_photo_debug_route(xhs_cls) -> None:
         @server.post("/xhs/debug/live-photo", tags=["API"])
         async def debug_live_photo(
             url: str = Body(..., embed=True),
-            authorization: str | None = Header(default=None),
+            debug_token: str | None = Header(
+                default=None,
+                alias="X-Debug-Token",
+            ),
         ):
-            _authorize(authorization)
+            _authorize(debug_token)
             clean_url = str(url or "").strip()
             if not clean_url:
                 raise HTTPException(status_code=400, detail="url is required")
