@@ -2,6 +2,7 @@ from re import compile
 
 from .app import XHS
 from .coze_async import install_coze_async_route
+from .live_photo_debug import install_live_photo_debug_route
 
 XHS.SHORT = compile(
     r"(?:https?://)?(?:www\.)?(?:xhslink|xhsurl)\.(?:cn|com)/"
@@ -10,5 +11,6 @@ XHS.SHORT = compile(
 )
 
 install_coze_async_route(XHS)
+install_live_photo_debug_route(XHS)
 
 __all__ = ["XHS"]
