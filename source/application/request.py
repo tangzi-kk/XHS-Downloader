@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING
+from urllib.parse import urljoin, urlparse
 
 from httpx import HTTPError
 from httpx import get
@@ -47,7 +48,11 @@ class Html:
                     )
                     await sleep_time()
                     response.raise_for_status()
-                    return response.text if content else str(response.url)
+                    return (
+                        response.text
+                        if content
+                        else self.__extract_canonical_url(response)
+                    )
                 case True:
                     response = await self.__request_url_get_proxy(
                         url,
@@ -57,7 +62,11 @@ class Html:
                     )
                     await sleep_time()
                     response.raise_for_status()
-                    return response.text if content else str(response.url)
+                    return (
+                        response.text
+                        if content
+                        else self.__extract_canonical_url(response)
+                    )
                 case _:
                     raise ValueError
         except HTTPError as error:
@@ -67,6 +76,33 @@ class Html:
                 ERROR,
             )
             return ""
+
+    @staticmethod
+    def __extract_canonical_url(response) -> str:
+        candidates = []
+        for item in (*response.history, response):
+            current_url = str(item.url)
+            candidates.append(current_url)
+            if location := item.headers.get("location"):
+                candidates.append(urljoin(current_url, location))
+
+        for candidate in candidates:
+            parsed = urlparse(candidate)
+            host = (parsed.hostname or "").lower()
+            path = parsed.path
+            if host in {
+                "xiaohongshu.com",
+                "www.xiaohongshu.com",
+                "rednote.com",
+                "www.rednote.com",
+            } and (
+                path.startswith("/discovery/item/")
+                or path.startswith("/explore/")
+                or path.startswith("/user/profile/")
+            ):
+                return candidate
+
+        return str(response.url)
 
     @staticmethod
     def format_url(url: str) -> str:
