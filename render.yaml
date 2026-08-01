@@ -11,6 +11,10 @@ services:
     envVars:
       - key: XHS_COOKIE
         sync: false
+      - key: COZE_API_TOKEN
+        sync: false
+      - key: COZE_WORKFLOW_TIMEOUT_SECONDS
+        value: "300"
       - key: FEISHU_APP_ID
         sync: false
       - key: FEISHU_APP_SECRET
