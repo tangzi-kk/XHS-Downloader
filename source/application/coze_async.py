@@ -362,7 +362,12 @@ def install_coze_async_route(xhs_cls) -> None:
             }
 
         @server.get("/coze/workflow/status/{task_id}", tags=["API"])
-        async def coze_workflow_status(task_id: str):
+        async def coze_workflow_status(
+            task_id: str,
+            authorization: str | None = Header(default=None),
+        ):
+            token = _read_token()
+            _authorize(authorization, token)
             state = _get_task_state(task_id)
             if state is None:
                 raise HTTPException(status_code=404, detail="task not found")

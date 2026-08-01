@@ -124,7 +124,7 @@ class TestCozeAsync(unittest.TestCase):
         self.assertIn("7665335986419941386", logs)
         self.assertNotIn("test_coze_token", logs)
 
-    def test_status_query_returns_state_without_token(self):
+    def test_status_query_without_token_is_rejected(self):
         with patch(
             "source.application.coze_async._run_coze_workflow",
             new_callable=AsyncMock,
@@ -133,6 +133,36 @@ class TestCozeAsync(unittest.TestCase):
 
         task_id = enqueue_response.json()["task_id"]
         response = self.client.get(f"/coze/workflow/status/{task_id}")
+
+        self.assertEqual(response.status_code, 401)
+
+    def test_status_query_with_invalid_token_is_rejected(self):
+        with patch(
+            "source.application.coze_async._run_coze_workflow",
+            new_callable=AsyncMock,
+        ):
+            enqueue_response = self.post_enqueue()
+
+        task_id = enqueue_response.json()["task_id"]
+        response = self.client.get(
+            f"/coze/workflow/status/{task_id}",
+            headers={"Authorization": "Bearer wrong_token"},
+        )
+
+        self.assertEqual(response.status_code, 401)
+
+    def test_status_query_with_valid_token_returns_state(self):
+        with patch(
+            "source.application.coze_async._run_coze_workflow",
+            new_callable=AsyncMock,
+        ):
+            enqueue_response = self.post_enqueue()
+
+        task_id = enqueue_response.json()["task_id"]
+        response = self.client.get(
+            f"/coze/workflow/status/{task_id}",
+            headers={"Authorization": "Bearer test_coze_token"},
+        )
 
         self.assertEqual(response.status_code, 200)
         body = response.json()
@@ -143,8 +173,11 @@ class TestCozeAsync(unittest.TestCase):
         self.assertIn("created_at", body)
         self.assertNotIn("test_coze_token", response.text)
 
-    def test_status_query_returns_404_for_unknown_task(self):
-        response = self.client.get("/coze/workflow/status/not-a-real-task")
+    def test_status_query_with_valid_token_returns_404_for_unknown_task(self):
+        response = self.client.get(
+            "/coze/workflow/status/not-a-real-task",
+            headers={"Authorization": "Bearer test_coze_token"},
+        )
         self.assertEqual(response.status_code, 404)
 
     def test_http_error_is_failed_and_response_fields_are_saved(self):
