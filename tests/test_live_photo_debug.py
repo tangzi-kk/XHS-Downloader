@@ -21,6 +21,7 @@ class TestLivePhotoDebug(unittest.TestCase):
 
     def tearDown(self):
         os.environ.pop("COZE_API_TOKEN", None)
+        os.environ.pop("XHS_DEBUG_TOKEN", None)
         os.environ.pop("XHS_COOKIE", None)
 
     def test_debug_route_returns_sanitized_live_photo_candidates(self):
@@ -53,7 +54,7 @@ class TestLivePhotoDebug(unittest.TestCase):
         response = self.client.post(
             "/xhs/debug/live-photo",
             json={"url": "https://xhslink.cn/o/test"},
-            headers={"Authorization": "Bearer test_debug_token"},
+            headers={"X-Debug-Token": "test_debug_token"},
         )
 
         self.assertEqual(response.status_code, 200)
@@ -74,8 +75,27 @@ class TestLivePhotoDebug(unittest.TestCase):
         self.assertNotIn("secret_xsec", serialized)
         self.assertNotIn("video_secret", serialized)
         self.assertNotIn("secret_cookie", serialized)
+        self.assertNotIn("test_debug_token", serialized)
 
-    def test_debug_route_rejects_missing_authorization(self):
+    def test_debug_route_prefers_dedicated_debug_token(self):
+        os.environ["XHS_DEBUG_TOKEN"] = "dedicated_debug_token"
+        self.xhs.extract_links = AsyncMock(return_value=[])
+
+        wrong_response = self.client.post(
+            "/xhs/debug/live-photo",
+            json={"url": "https://xhslink.cn/o/test"},
+            headers={"X-Debug-Token": "test_debug_token"},
+        )
+        self.assertEqual(wrong_response.status_code, 401)
+
+        accepted_response = self.client.post(
+            "/xhs/debug/live-photo",
+            json={"url": "https://xhslink.cn/o/test"},
+            headers={"X-Debug-Token": "dedicated_debug_token"},
+        )
+        self.assertEqual(accepted_response.status_code, 422)
+
+    def test_debug_route_rejects_missing_debug_token(self):
         response = self.client.post(
             "/xhs/debug/live-photo",
             json={"url": "https://xhslink.cn/o/test"},
@@ -87,7 +107,7 @@ class TestLivePhotoDebug(unittest.TestCase):
         response = self.client.post(
             "/xhs/debug/live-photo",
             json={"url": "https://example.com/not-xhs"},
-            headers={"Authorization": "Bearer test_debug_token"},
+            headers={"X-Debug-Token": "test_debug_token"},
         )
         self.assertEqual(response.status_code, 422)
 
