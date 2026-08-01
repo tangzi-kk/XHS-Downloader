@@ -1,4 +1,5 @@
 import asyncio
+import os
 import unittest
 from concurrent.futures import ThreadPoolExecutor
 from unittest.mock import patch
@@ -174,6 +175,43 @@ class EnqueueTests(unittest.TestCase):
             )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["status"], "queued")
+
+
+class UploadRouteTests(unittest.TestCase):
+    def test_v2_preserves_video_media_for_attachment_upload(self):
+        api = FastAPI()
+        xhs = object.__new__(XHS)
+        XHS.setup_routes(xhs, api)
+
+        with (
+            patch.dict(
+                os.environ,
+                {"FEISHU_BITABLE_APP_TOKEN": "test-app-token"},
+                clear=False,
+            ),
+            patch.object(xhs, "get_tenant_access_token", return_value="test-tenant-token"),
+            patch.object(
+                xhs,
+                "download_image_bytes",
+                return_value=(b"mp4-bytes", "live-photo.mp4", "video/mp4"),
+            ),
+            patch.object(
+                xhs,
+                "upload_image_to_feishu",
+                return_value="test-video-file-token",
+            ) as upload,
+        ):
+            response = TestClient(api).post(
+                "/feishu_upload_v2",
+                json={"image_url": "https://cdn.example.com/live-photo.mp4"},
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["file_token"], "test-video-file-token")
+        upload.assert_called_once()
+        self.assertEqual(upload.call_args.kwargs["image_bytes"], b"mp4-bytes")
+        self.assertEqual(upload.call_args.kwargs["filename"], "live-photo.mp4")
+        self.assertEqual(upload.call_args.kwargs["content_type"], "video/mp4")
 
 
 class AggregateTests(unittest.TestCase):

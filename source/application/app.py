@@ -1178,12 +1178,13 @@ class XHS:
                     source_filename,
                     source_content_type,
                 ):
-                    image_bytes, filename, content_type = (
-                        self.extract_video_cover(
-                            source_bytes,
-                            source_filename,
-                        )
-                    )
+                    # Coze uses this endpoint for the `原视频` attachment field.
+                    # Keep the source media here; converting an MP4 to
+                    # `video_cover.jpg` makes the writeback look successful
+                    # while storing an image instead of the original video.
+                    image_bytes = source_bytes
+                    filename = source_filename
+                    content_type = source_content_type
                 else:
                     image_bytes = source_bytes
                     filename = source_filename
