@@ -58,6 +58,7 @@ class Converter:
     YAML_ILLEGAL = compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
     INITIAL_STATE_PREFIX = compile(r"^window\.__INITIAL_STATE__\s*=\s*")
     TRAILING_SEMICOLON = compile(r";\s*$")
+    EMPTY_JS_MAP = compile(r"\bnew\s+Map\s*\(\s*\[\s*\]\s*\)")
     INITIAL_STATE = "//script/text()"
     PC_KEYS_LINK = (
         "note",
@@ -87,11 +88,16 @@ class Converter:
         if not cleaned:
             raise InitialStateParseError(reason="empty_payload")
 
+        # Empty JavaScript Maps carry no entries and are equivalent to an
+        # empty object for the initial-state parser. Leave non-empty Maps
+        # untouched so an unsupported shape still fails closed.
+        normalized = cls.EMPTY_JS_MAP.sub("{}", cleaned)
+
         try:
-            data = loads(cleaned)
+            data = loads(normalized)
         except JSONDecodeError as json_error:
             try:
-                data = safe_load(cleaned)
+                data = safe_load(normalized)
             except YAMLError as yaml_error:
                 raise InitialStateParseError(
                     json_error=json_error,
