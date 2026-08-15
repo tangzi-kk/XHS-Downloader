@@ -15,8 +15,14 @@ def test_legacy_yaml_initial_state_is_still_supported():
     assert Converter._convert_object(payload) == {"note": {"title": "legacy"}}
 
 
+def test_empty_javascript_map_is_normalized_to_an_empty_object():
+    payload = 'window.__INITIAL_STATE__={"note": new Map([])};'
+
+    assert Converter._convert_object(payload) == {"note": {}}
+
+
 def test_malformed_initial_state_has_stable_non_sensitive_error():
-    payload = "window.__INITIAL_STATE__={note: new Map([])};"
+    payload = "window.__INITIAL_STATE__={note: new Map([broken])};"
 
     with pytest.raises(InitialStateParseError) as caught:
         Converter._convert_object(payload)
