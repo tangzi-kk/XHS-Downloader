@@ -37,6 +37,7 @@ from ..expansion import (
     Namespace,
     beautify_string,
 )
+from ..expansion.converter import InitialStateParseError
 from ..module import (
     __VERSION__,
     ERROR,
@@ -1143,14 +1144,21 @@ class XHS:
             if not url:
                 msg = _("提取小红书作品链接失败")
             else:
-                if data := await self.__deal_extract(
-                    url[0],
-                    extract.download,
-                    extract.index,
-                    not extract.skip,
-                    effective_cookie,
-                    extract.proxy,
-                ):
+                try:
+                    data = await self.__deal_extract(
+                        url[0],
+                        extract.download,
+                        extract.index,
+                        not extract.skip,
+                        effective_cookie,
+                        extract.proxy,
+                    )
+                except InitialStateParseError as error:
+                    raise HTTPException(
+                        status_code=502,
+                        detail=error.as_detail(),
+                    ) from error
+                if data:
                     msg = _("获取小红书作品数据成功")
                 else:
                     msg = _("获取小红书作品数据失败")
